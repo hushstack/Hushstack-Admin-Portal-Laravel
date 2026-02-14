@@ -1,0 +1,20 @@
+user :
+    -> id
+    -> first_name
+    -> last_name
+    -> username
+    -> email
+    -> password                (string)
+    -> is_verified             (boolean)
+    -> picture                 (string , nullable)
+    -> cover                   (string , nullable)
+    -> bio                     (string , nullable)
+    -> note                    (string , nullable)
+    -> birth_of_date           (date , nullable)
+    -> age                     (string , nullable)
+    -> nationality_id          (nullable)
+    -> contact_url             (string , nullable)
+    -> address                 (string , nullable)
+    -> provider                (string, nullable)   // github | facebook | google
+    -> provider_id             (string, nullable)   // id from github/facebook/google
+    -> email_verified_at       (datetime, nullable)

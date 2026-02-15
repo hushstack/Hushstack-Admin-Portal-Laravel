@@ -41,4 +41,13 @@ return [
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
         'chat_id'   => env('TELEGRAM_CHAT_ID'),
     ],
+
+    'microsoft' => [
+        'client_id' => env('MICROSOFT_CLIENT_ID'),
+        'client_secret' => env('MICROSOFT_CLIENT_SECRET'),
+        'redirect' => env('MICROSOFT_REDIRECT_URI'),
+
+        // IMPORTANT: for Any Entra tenant + Personal accounts use "common"
+        'tenant' => env('MICROSOFT_TENANT', 'common'),
+    ],
 ];

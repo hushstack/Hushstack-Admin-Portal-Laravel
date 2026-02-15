@@ -24,3 +24,5 @@ Route::prefix('auth')->group(function () {
         Route::post('/delete-account', [AccountController::class, 'requestDelete']);
     });
 });
+
+Route::post('/contact', [\App\Http\Controllers\Api\ContactController::class, 'send']);

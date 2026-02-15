@@ -18,6 +18,9 @@ Route::prefix('auth')->group(function () {
     Route::get('/google/redirect', [GoogleAuthController::class, 'redirect']);
     Route::get('/google/callback', [GoogleAuthController::class, 'callback']);
 
+    Route::get('microsoft/redirect', [\App\Http\Controllers\Api\MicrosoftAuthController::class, 'redirect']);
+    Route::get('microsoft/callback', [\App\Http\Controllers\Api\MicrosoftAuthController::class, 'callback']);
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/change-password', [AuthController::class, 'changePassword']);

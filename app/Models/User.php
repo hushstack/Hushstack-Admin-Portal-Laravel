@@ -32,14 +32,24 @@ class User extends Authenticatable
         'provider_id',
         'email_verified_at',
         'login_otp_verified_at',
+        'facebook_url',
+        'x_url',
+        'linkedin_url',
+        'instagram_url',
+        'country',
+        'city_state',
+        'postal_code',
+        'tax_id',
+        'username_changed_at',
     ];
 
     protected $hidden = ['password', 'remember_token'];
 
     protected $casts = [
-        'is_verified' => 'boolean',
-        'email_verified_at' => 'datetime',
-        'birth_of_date' => 'date',
-        'login_otp_verified_at' => 'datetime',
+        'is_verified'          => 'boolean',
+        'email_verified_at'    => 'datetime',
+        'birth_of_date'        => 'date',
+        'login_otp_verified_at'=> 'datetime',
+        'username_changed_at'   => 'datetime'
     ];
 }

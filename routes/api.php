@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\AccountController;
+use App\Http\Controllers\Api\ProfileController;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -13,7 +14,6 @@ Route::prefix('auth')->group(function () {
     Route::post('/resend-otp', [AuthController::class, 'resendOtp']);
 
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
-    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
     Route::get('/google/redirect', [GoogleAuthController::class, 'redirect']);
     Route::get('/google/callback', [GoogleAuthController::class, 'callback']);
@@ -29,3 +29,13 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::post('/contact', [\App\Http\Controllers\Api\ContactController::class, 'send']);
+
+Route::middleware('auth:sanctum')->prefix('profile')->group(function () {
+    Route::get('header',        [ProfileController::class, 'header']);
+    Route::get('personal-info', [ProfileController::class, 'personalInfo']);
+    Route::get('address',       [ProfileController::class, 'address']);
+    Route::post('header',        [ProfileController::class, 'updateHeader']);
+    Route::post('personal-info',[ProfileController::class, 'updatePersonalInfo']);
+//    Route::patch('header',      [ProfileController::class, 'updateHeader']);
+    Route::post('address',      [ProfileController::class, 'updateAddress']);
+});

@@ -11,10 +11,29 @@ class MicrosoftAuthService
 {
     public function redirect()
     {
-        // stateless for API
+        $redirectTo = request()->query('redirect_to');
+
+        // validate exact match against whitelist
+        $allowed = config('services.frontend_redirect_whitelist', []);
+        $redirectTo = $redirectTo ? rtrim($redirectTo, '/') : null;
+
+        $ok = false;
+        if ($redirectTo) {
+            foreach ($allowed as $a) {
+                if ($redirectTo === rtrim($a, '/')) { $ok = true; break; }
+            }
+        }
+        if (!$ok) $redirectTo = null;
+
+        $state = rtrim(strtr(base64_encode(json_encode([
+            'redirect_to' => $redirectTo,
+            'ts' => time(),
+            'provider' => 'microsoft',
+        ])), '+/', '-_'), '=');
+
         return Socialite::driver('microsoft')
             ->stateless()
-            // ->scopes(['openid', 'email', 'profile']) // optional
+            ->with(['state' => $state])
             ->redirect();
     }
 

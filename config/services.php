@@ -50,4 +50,6 @@ return [
         // IMPORTANT: for Any Entra tenant + Personal accounts use "common"
         'tenant' => env('MICROSOFT_TENANT', 'common'),
     ],
+
+    'frontend_redirect_whitelist' => array_filter(explode(',', env('FRONTEND_REDIRECT_WHITELIST', ''))),
 ];

@@ -1,22 +1,22 @@
-# Hushstack Admin Portal API
+# 🚀 Hushstack Admin Portal API
 
 Production-oriented backend service for the Hushstack Admin Portal, built with Laravel 10.  
 The API handles identity, profile management, contact communication, and account lifecycle workflows.
 
-## Table of Contents
+## 📚 Table of Contents
 
-- [Overview](#overview)
-- [Technology Stack](#technology-stack)
-- [Core Capabilities](#core-capabilities)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Environment Configuration](#environment-configuration)
-- [Runtime & Operations](#runtime--operations)
-- [API Route Index](#api-route-index)
-- [Security & Behavior Notes](#security--behavior-notes)
-- [Deployment Notes](#deployment-notes)
+- [🎯 Overview](#-overview)
+- [🧰 Technology Stack](#-technology-stack)
+- [✨ Core Capabilities](#-core-capabilities)
+- [🗂️ Project Structure](#️-project-structure)
+- [⚙️ Getting Started](#️-getting-started)
+- [🔐 Environment Configuration](#-environment-configuration)
+- [🛠️ Runtime & Operations](#️-runtime--operations)
+- [🧭 API Route Index](#-api-route-index)
+- [🛡️ Security & Behavior Notes](#️-security--behavior-notes)
+- [📦 Deployment Notes](#-deployment-notes)
 
-## Overview
+## 🎯 Overview
 
 This service exposes RESTful endpoints under `/api` for:
 
@@ -27,7 +27,7 @@ This service exposes RESTful endpoints under `/api` for:
 - Contact form delivery to admin/user email plus optional Telegram alerts
 - Delayed account deletion workflow with asynchronous processing
 
-## Technology Stack
+## 🧰 Technology Stack
 
 - PHP `^8.1`
 - Laravel `^10.10`
@@ -38,9 +38,9 @@ This service exposes RESTful endpoints under `/api` for:
 - SMTP mail provider
 - Cloudflare R2 (S3-compatible) for profile media uploads
 
-## Core Capabilities
+## ✨ Core Capabilities
 
-### 1) Authentication and Account Access
+### 1. 🔑 Authentication and Account Access
 
 - Register with email/password and required profile fields
 - OTP email verification before login is allowed
@@ -49,21 +49,21 @@ This service exposes RESTful endpoints under `/api` for:
 - Change password while authenticated
 - Logout by revoking current access token
 
-### 2) Social Login
+### 2. 🌐 Social Login
 
 - Google OAuth callback flow
 - Microsoft OAuth callback flow
 - Optional `redirect_to` passthrough with strict whitelist validation
 - Auto-link existing account by email where applicable
 
-### 3) Profile Management
+### 3. 👤 Profile Management
 
 - Header data (bio, social links, profile picture, cover image)
 - Personal information (first name, last name, phone, username, bio)
 - Address data (country, city/state, postal code, tax ID, address)
 - Username update window policy: once every 7 days
 
-### 4) Contact Workflow
+### 4. 📩 Contact Workflow
 
 - Public contact endpoint
 - Admin notification email
@@ -71,7 +71,7 @@ This service exposes RESTful endpoints under `/api` for:
 - Optional Telegram post to configured chat/thread
 - Entire flow executed asynchronously via queue job
 
-### 5) Account Deletion Workflow
+### 5. 🗑️ Account Deletion Workflow
 
 - Authenticated delete request endpoint
 - Warning email to user
@@ -79,7 +79,7 @@ This service exposes RESTful endpoints under `/api` for:
 - Token revocation and user cleanup on execution
 - Success email after deletion
 
-## Project Structure
+## 🗂️ Project Structure
 
 ```text
 app/
@@ -98,9 +98,9 @@ routes/
   api.php                   # API routes
 ```
 
-## Getting Started
+## ⚙️ Getting Started
 
-### Prerequisites
+### ✅ Prerequisites
 
 - PHP 8.1+
 - Composer 2+
@@ -108,21 +108,21 @@ routes/
 - MySQL (or compatible DB configured in `.env`)
 - Mail service credentials
 
-### Clone Repository
+### 📥 Clone Repository
 
 ```bash
 git clone <repository-url>
 cd Hushstack-Admin-Portal-Laravel
 ```
 
-### Install Dependencies
+### 📦 Install Dependencies
 
 ```bash
 composer install
 npm install
 ```
 
-### Configure Environment
+### 🔧 Configure Environment
 
 Linux/macOS:
 
@@ -142,13 +142,13 @@ Then generate app key:
 php artisan key:generate
 ```
 
-### Initialize Database
+### 🗄️ Initialize Database
 
 ```bash
 php artisan migrate
 ```
 
-### Run Application
+### ▶️ Run Application
 
 Start API server:
 
@@ -168,11 +168,11 @@ Optional asset watcher:
 npm run dev
 ```
 
-## Environment Configuration
+## 🔐 Environment Configuration
 
 Configure the following variables in `.env`.
 
-### Core
+### 🧩 Core
 
 | Variable | Required | Description |
 |---|---|---|
@@ -182,7 +182,7 @@ Configure the following variables in `.env`.
 | `APP_URL` | Yes | Public API base URL |
 | `SESSION_LIFETIME` | Recommended | Session lifetime in minutes |
 
-### Database
+### 🗄️ Database
 
 | Variable | Required |
 |---|---|
@@ -193,13 +193,13 @@ Configure the following variables in `.env`.
 | `DB_USERNAME` | Yes |
 | `DB_PASSWORD` | Yes |
 
-### Queue
+### 📨 Queue
 
 | Variable | Required | Notes |
 |---|---|---|
 | `QUEUE_CONNECTION` | Yes | Use `database` or `redis` for async processing |
 
-### Mail
+### ✉️ Mail
 
 | Variable | Required |
 |---|---|
@@ -212,7 +212,7 @@ Configure the following variables in `.env`.
 | `MAIL_FROM_ADDRESS` | Yes |
 | `MAIL_FROM_NAME` | Yes |
 
-### OAuth Providers
+### 🔐 OAuth Providers
 
 | Variable | Required | Description |
 |---|---|---|
@@ -225,7 +225,7 @@ Configure the following variables in `.env`.
 | `MICROSOFT_TENANT` | Recommended | Usually `common` |
 | `FRONTEND_REDIRECT_WHITELIST` | Recommended | Comma-separated exact allowed redirect URLs |
 
-### Contact and Notifications
+### 📬 Contact and Notifications
 
 | Variable | Required | Description |
 |---|---|---|
@@ -233,7 +233,7 @@ Configure the following variables in `.env`.
 | `TELEGRAM_BOT_TOKEN` | Optional | Enables Telegram posting |
 | `TELEGRAM_CHAT_ID` | Optional | Telegram destination chat ID |
 
-### R2 Storage (Profile Media)
+### 🖼️ R2 Storage (Profile Media)
 
 | Variable | Required | Description |
 |---|---|---|
@@ -245,9 +245,9 @@ Configure the following variables in `.env`.
 | `R2_URL` | For image upload | Public base URL |
 | `R2_USE_PATH_STYLE_ENDPOINT` | Optional | Depends on provider setup |
 
-## Runtime & Operations
+## 🛠️ Runtime & Operations
 
-### Queue-Dependent Features
+### 🧵 Queue-Dependent Features
 
 The following features rely on queue workers:
 
@@ -258,21 +258,21 @@ The following features rely on queue workers:
 
 If `QUEUE_CONNECTION=sync`, these execute inline during requests.
 
-### CORS
+### 🌍 CORS
 
 Current configuration allows all origins (`allowed_origins = ['*']`) for `api/*`.  
 Restrict this in production to trusted frontend domains.
 
-### Filesystem
+### 💾 Filesystem
 
 - Profile picture and cover uploads use the `r2` disk.
 - Ensure the configured `R2_URL` is publicly reachable by the frontend.
 
-## API Route Index
+## 🧭 API Route Index
 
 Base URL prefix: `/api`
 
-### Authentication
+### 🔑 Authentication
 
 - `POST /auth/register`
 - `POST /auth/login`
@@ -288,11 +288,11 @@ Base URL prefix: `/api`
 - `POST /auth/change-password` (auth required)
 - `POST /auth/delete-account` (auth required)
 
-### Contact
+### 📩 Contact
 
 - `POST /contact`
 
-### Profile (auth required)
+### 👤 Profile (auth required)
 
 - `GET /profile/header`
 - `POST /profile/header`
@@ -301,7 +301,7 @@ Base URL prefix: `/api`
 - `GET /profile/address`
 - `POST /profile/address`
 
-## Security & Behavior Notes
+## 🛡️ Security & Behavior Notes
 
 - Passwords are hashed before persistence.
 - OTP records store hashed codes, with expiry and attempt caps.
@@ -309,7 +309,7 @@ Base URL prefix: `/api`
 - Authenticated endpoints are protected by Sanctum (`auth:sanctum`).
 - Username update is rate-limited by policy (7-day interval).
 
-## Deployment Notes
+## 📦 Deployment Notes
 
 - Use `APP_ENV=production` and `APP_DEBUG=false`.
 - Configure `QUEUE_CONNECTION` to `database` or `redis` and run persistent workers (Supervisor, systemd, or equivalent).

@@ -17,6 +17,7 @@ class User extends Authenticatable
         'username',
         'email',
         'phone_number',
+        'social_login_key',
         'password',
         'is_verified',
         'picture',

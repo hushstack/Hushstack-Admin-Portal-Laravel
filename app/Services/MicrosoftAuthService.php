@@ -28,6 +28,8 @@ class MicrosoftAuthService
             ->stateless()
             ->with([
                 'state' => $state,
+                // Force Microsoft to ask account selection each login.
+                'prompt' => 'select_account',
             ])
             ->redirect();
     }

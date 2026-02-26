@@ -26,7 +26,11 @@ class GoogleAuthService
 
         return Socialite::driver('google')
             ->stateless()
-            ->with(['state' => $state])
+            ->with([
+                'state' => $state,
+                // Force Google to always show account picker + consent screen.
+                'prompt' => 'select_account consent',
+            ])
             ->redirect();
     }
 

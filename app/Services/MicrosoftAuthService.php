@@ -1,46 +1,41 @@
 <?php
 
-namespace  App\Services;
+namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
 class MicrosoftAuthService
 {
-    public function redirect()
+    private const STATE_TTL_SECONDS = 600;
+
+    public function redirect(Request $request)
     {
-        $redirectTo = request()->query('redirect_to');
+        $redirectTo = $this->validateRedirectTo($request->query('redirect_to'));
 
-        // validate exact match against whitelist
-        $allowed = config('services.frontend_redirect_whitelist', []);
-        $redirectTo = $redirectTo ? rtrim($redirectTo, '/') : null;
-
-        $ok = false;
-        if ($redirectTo) {
-            foreach ($allowed as $a) {
-                if ($redirectTo === rtrim($a, '/')) { $ok = true; break; }
-            }
-        }
-        if (!$ok) $redirectTo = null;
-
-        $state = rtrim(strtr(base64_encode(json_encode([
+        $state = $this->encodeState([
             'redirect_to' => $redirectTo,
             'ts' => time(),
+            'nonce' => Str::random(16),
             'provider' => 'microsoft',
-        ])), '+/', '-_'), '=');
+        ]);
 
         return Socialite::driver('microsoft')
             ->stateless()
-            ->with(['state' => $state])
+            ->with([
+                'state' => $state,
+            ])
             ->redirect();
     }
 
     /**
-     * @return array{success:bool,status?:int,message?:string,error?:string,user?:User}
+     * @return array{success:bool,status?:int,message?:string,error?:string,user?:User,redirect_to?:string,wants_json?:bool}
      */
-    public function handleCallback(): array
+    public function handleCallback(Request $request): array
     {
         try {
             $ms = Socialite::driver('microsoft')
@@ -49,20 +44,17 @@ class MicrosoftAuthService
 
             $provider = 'microsoft';
             $providerId = (string) $ms->getId();
-            $email = $ms->getEmail(); // can be null for some accounts
+            $email = $ms->getEmail();
             $name = $ms->getName() ?: ($ms->getNickname() ?: 'Microsoft User');
 
-            // 1) Best match: provider + provider_id
             $user = User::where('provider', $provider)
                 ->where('provider_id', $providerId)
                 ->first();
 
-            // 2) If no match, link by email (optional but common)
             if (!$user && $email) {
                 $user = User::where('email', $email)->first();
             }
 
-            // 3) Create user if not exists
             if (!$user) {
                 if (!$email) {
                     return [
@@ -79,14 +71,13 @@ class MicrosoftAuthService
                     'last_name' => $last,
                     'username' => $this->makeUsername($email),
                     'email' => $email,
-                    'password' => Hash::make(Str::random(32)), // random (social login)
+                    'password' => Hash::make(Str::random(32)),
                     'is_verified' => true,
                     'email_verified_at' => now(),
                     'provider' => $provider,
                     'provider_id' => $providerId,
                 ]);
             } else {
-                // ensure linked + verified
                 $user->update([
                     'provider' => $user->provider ?: $provider,
                     'provider_id' => $user->provider_id ?: $providerId,
@@ -95,11 +86,20 @@ class MicrosoftAuthService
                 ]);
             }
 
+            $state = $this->decodeState($request->query('state'));
+            $redirectTo = $this->validateRedirectTo($state['redirect_to'] ?? null);
+
             return [
                 'success' => true,
                 'user' => $user,
+                'redirect_to' => $redirectTo,
+                'wants_json' => $this->wantsJson($request),
             ];
         } catch (\Throwable $e) {
+            Log::warning('Microsoft login failed.', [
+                'error' => $e->getMessage(),
+            ]);
+
             return [
                 'success' => false,
                 'status' => 422,
@@ -107,6 +107,80 @@ class MicrosoftAuthService
                 'error' => $e->getMessage(),
             ];
         }
+    }
+
+    private function validateRedirectTo(?string $redirectTo): ?string
+    {
+        if (!$redirectTo) {
+            return null;
+        }
+
+        $allowed = config('services.frontend_redirect_whitelist', []);
+        $redirectTo = rtrim($redirectTo, '/');
+
+        foreach ($allowed as $candidate) {
+            if ($redirectTo === rtrim($candidate, '/')) {
+                return $redirectTo;
+            }
+        }
+
+        return null;
+    }
+
+    private function wantsJson(Request $request): bool
+    {
+        return $request->expectsJson()
+            || str_contains($request->header('Accept', ''), 'application/json')
+            || $request->query('json') === '1';
+    }
+
+    private function encodeState(array $data): string
+    {
+        $json = json_encode($data, JSON_UNESCAPED_SLASHES);
+        $payload = rtrim(strtr(base64_encode($json ?: '{}'), '+/', '-_'), '=');
+        $signature = hash_hmac('sha256', $payload, $this->stateSigningKey());
+
+        return $payload . '.' . $signature;
+    }
+
+    private function decodeState(?string $state): array
+    {
+        if (!$state || !str_contains($state, '.')) {
+            return [];
+        }
+
+        [$payload, $signature] = explode('.', $state, 2);
+        $expected = hash_hmac('sha256', $payload, $this->stateSigningKey());
+
+        if (!hash_equals($expected, $signature)) {
+            return [];
+        }
+
+        $decoded = base64_decode(strtr($payload, '-_', '+/'), true);
+        if ($decoded === false) {
+            return [];
+        }
+
+        $data = json_decode($decoded, true);
+        if (!is_array($data)) {
+            return [];
+        }
+
+        if (($data['provider'] ?? null) !== 'microsoft') {
+            return [];
+        }
+
+        $ts = isset($data['ts']) ? (int) $data['ts'] : 0;
+        if ($ts <= 0 || (time() - $ts) > self::STATE_TTL_SECONDS) {
+            return [];
+        }
+
+        return $data;
+    }
+
+    private function stateSigningKey(): string
+    {
+        return (string) config('app.key', 'microsoft-oauth-state-fallback-key');
     }
 
     private function splitName(string $name): array
@@ -122,6 +196,7 @@ class MicrosoftAuthService
     private function makeUsername(string $email): string
     {
         $base = Str::before($email, '@');
+
         return $base . '_' . Str::lower(Str::random(4));
     }
 }

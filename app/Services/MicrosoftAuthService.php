@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -68,6 +69,11 @@ class MicrosoftAuthService
 
                 [$first, $last] = $this->splitName($name);
 
+                $roleId = Role::idBySlug(Role::USER_SLUG);
+                if ($roleId <= 0) {
+                    throw new \RuntimeException('Default role not configured.');
+                }
+
                 $user = User::create([
                     'first_name' => $first,
                     'last_name' => $last,
@@ -78,6 +84,7 @@ class MicrosoftAuthService
                     'email_verified_at' => now(),
                     'provider' => $provider,
                     'provider_id' => $providerId,
+                    'role_id' => $roleId,
                 ]);
             } else {
                 $user->update([

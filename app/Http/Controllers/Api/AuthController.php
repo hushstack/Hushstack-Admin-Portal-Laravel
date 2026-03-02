@@ -90,6 +90,7 @@ class AuthController extends Controller
             ], 403);
         }
 
+        $user->load('role');
         $token = $this->auth->issueToken($user);
 
         return response()->json([

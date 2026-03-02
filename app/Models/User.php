@@ -27,6 +27,7 @@ class User extends Authenticatable
         'birth_of_date',
         'age',
         'nationality_id',
+        'role_id',
         'contact_url',
         'address',
         'provider',
@@ -51,6 +52,12 @@ class User extends Authenticatable
         'email_verified_at'    => 'datetime',
         'birth_of_date'        => 'date',
         'login_otp_verified_at'=> 'datetime',
+        'role_id'              => 'integer',
         'username_changed_at'   => 'datetime'
     ];
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
 }

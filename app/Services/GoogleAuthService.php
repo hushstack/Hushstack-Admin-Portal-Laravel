@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -69,6 +70,11 @@ class GoogleAuthService
 
                 [$first, $last] = $this->splitName($name);
 
+                $roleId = Role::idBySlug(Role::USER_SLUG);
+                if ($roleId <= 0) {
+                    throw new \RuntimeException('Default role not configured.');
+                }
+
                 $user = User::create([
                     'first_name' => $first,
                     'last_name' => $last,
@@ -81,6 +87,7 @@ class GoogleAuthService
                     'provider' => $provider,
                     'provider_id' => $providerId,
                     'picture' => $avatar,
+                    'role_id' => $roleId,
                 ]);
             } else {
                 $user->update([

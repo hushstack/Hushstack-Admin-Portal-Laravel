@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\UserRoleController;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -38,4 +40,9 @@ Route::middleware('auth:sanctum')->prefix('profile')->group(function () {
     Route::post('personal-info',[ProfileController::class, 'updatePersonalInfo']);
 //    Route::patch('header',      [ProfileController::class, 'updateHeader']);
     Route::post('address',      [ProfileController::class, 'updateAddress']);
+});
+
+Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
+    Route::apiResource('roles', RoleController::class)->except(['show']);
+    Route::post('users/{user}/role', [UserRoleController::class, 'assign']);
 });

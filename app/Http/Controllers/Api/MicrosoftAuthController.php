@@ -33,7 +33,7 @@ class MicrosoftAuthController extends Controller
             ], $result['status'] ?? 422);
         }
 
-        $user = $result['user'];
+        $user = $result['user']->load('role');
         $token = $this->auth->issueToken($user);
 
         $payload = [

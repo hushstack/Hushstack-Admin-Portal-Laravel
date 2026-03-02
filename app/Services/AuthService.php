@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
@@ -9,6 +10,12 @@ class AuthService
 {
     public function register(array $data): User
     {
+        // Manual registration always gets the default role (ignore client input).
+        $roleId = Role::defaultId();
+        if ($roleId <= 0) {
+            throw new \RuntimeException('Default role not configured.');
+        }
+
         return User::create([
             'username' => $data['username'],
             'first_name' => $data['first_name'],
@@ -18,6 +25,7 @@ class AuthService
             'birth_of_date' => $data['birth_of_date'],
             'password' => Hash::make($data['password']),
             'is_verified' => false,
+            'role_id' => $roleId,
         ]);
     }
 

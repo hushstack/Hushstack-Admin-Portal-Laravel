@@ -36,3 +36,4 @@ Purpose: Project guardrails for security, performance, clean code, and maintaina
 - Small methods, single responsibility, and predictable return shapes.
 - Write tests for critical flows and authorization boundaries.
 - Avoid duplication; extract shared logic into helpers or traits.
+- Code must use OOAD principles and appropriate design patterns.

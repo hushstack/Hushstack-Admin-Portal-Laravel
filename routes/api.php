@@ -42,7 +42,7 @@ Route::middleware('auth:sanctum')->prefix('profile')->group(function () {
     Route::post('address',      [ProfileController::class, 'updateAddress']);
 });
 
-Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
+Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
     Route::apiResource('roles', RoleController::class)->except(['show']);
     Route::post('users/{user}/role', [UserRoleController::class, 'assign']);
 });

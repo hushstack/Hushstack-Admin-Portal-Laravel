@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\Api\Admin\UserAdminController;
 use App\Http\Controllers\Api\Admin\UserRequestController;
+use App\Http\Controllers\Api\Admin\UserActivityController;
 use App\Http\Controllers\Api\MemberRequestController;
 
 Route::prefix('auth')->group(function () {
@@ -54,4 +55,5 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::get('users/{user}', [UserAdminController::class, 'show']);
     Route::delete('users/{user}', [UserAdminController::class, 'destroy']);
     Route::get('user-requests', [UserRequestController::class, 'index']);
+    Route::get('user-activities', [UserActivityController::class, 'index']);
 });

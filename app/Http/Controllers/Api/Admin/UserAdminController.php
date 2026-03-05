@@ -8,11 +8,17 @@ use App\Http\Requests\Admin\User\SearchUserRequest;
 use App\Http\Resources\Admin\UserDetailResource;
 use App\Http\Resources\Admin\UserListResource;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Http\Request;
 
 class UserAdminController extends Controller
 {
     use ApiResponseTrait;
+
+    public function __construct(private ActivityLogger $activityLogger)
+    {
+    }
 
     public function index(IndexUserRequest $request)
     {
@@ -34,6 +40,8 @@ class UserAdminController extends Controller
             'total' => $users->total(),
             'last_page' => $users->lastPage(),
         ], 'Users loaded.');
+
+        $this->activityLogger->log($request->user(), 'Viewed user list', $request->ip());
     }
 
     public function search(SearchUserRequest $request)
@@ -52,6 +60,8 @@ class UserAdminController extends Controller
             ->latest('id')
             ->paginate($data['per_page'] ?? 20);
 
+        $this->activityLogger->log($request->user(), "Searched users term: {$term}", $request->ip());
+
         return $this->successResponse([
             'data' => UserListResource::collection($users->items()),
             'page' => $users->currentPage(),
@@ -62,16 +72,18 @@ class UserAdminController extends Controller
         ], 'Users loaded.');
     }
 
-    public function show(User $user)
+    public function show(Request $request, User $user)
     {
         $user->load(['role', 'nationality']);
 
         return $this->successResponse(new UserDetailResource($user), 'User detail loaded.');
     }
 
-    public function destroy(User $user)
+    public function destroy(Request $request, User $user)
     {
         $user->delete();
+
+        $this->activityLogger->log($request->user(), "Deleted user #{$user->id}", $request->ip());
 
         return $this->successResponse(null, 'User deleted.');
     }

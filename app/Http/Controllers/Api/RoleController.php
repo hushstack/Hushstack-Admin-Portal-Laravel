@@ -7,12 +7,18 @@ use App\Http\Requests\Role\StoreRoleRequest;
 use App\Http\Requests\Role\UpdateRoleRequest;
 use App\Http\Resources\RoleResource;
 use App\Models\Role;
+use App\Services\ActivityLogger;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 
 class RoleController extends Controller
 {
     use ApiResponseTrait;
+
+    public function __construct(private ActivityLogger $activityLogger)
+    {
+    }
 
     public function index()
     {
@@ -35,6 +41,8 @@ class RoleController extends Controller
         }
 
         $role = Role::create($data);
+
+        $this->activityLogger->log($request->user(), "Created role {$role->name}", $request->ip());
 
         return $this->successResponse(new RoleResource($role), 'Role created.', 201);
     }
@@ -60,13 +68,15 @@ class RoleController extends Controller
         return $this->successResponse(new RoleResource($role), 'Role updated.');
     }
 
-    public function destroy(Role $role)
+    public function destroy(Request $request, Role $role)
     {
         if ($role->users()->exists()) {
             return $this->errorResponse('Role has users assigned. Remove users before deleting.', 422);
         }
 
         $role->delete();
+
+        $this->activityLogger->log($request->user(), "Deleted role {$role->name}", $request->ip());
 
         return $this->successResponse(null, 'Role deleted.');
     }

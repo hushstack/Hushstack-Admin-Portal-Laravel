@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserRoleController;
+use App\Http\Controllers\Api\Admin\UserAdminController;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -45,4 +46,8 @@ Route::middleware('auth:sanctum')->prefix('profile')->group(function () {
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
     Route::apiResource('roles', RoleController::class)->except(['show']);
     Route::post('users/{user}/role', [UserRoleController::class, 'assign']);
+    Route::get('users', [UserAdminController::class, 'index']);
+    Route::get('users/search', [UserAdminController::class, 'search']);
+    Route::get('users/{user}', [UserAdminController::class, 'show']);
+    Route::delete('users/{user}', [UserAdminController::class, 'destroy']);
 });

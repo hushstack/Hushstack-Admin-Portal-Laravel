@@ -16,6 +16,7 @@ class ContactController extends Controller
     public function send(SendContactRequest $request)
     {
         $payload = $request->validated();
+        $payload['ip_address'] = $request->ip();
 
         $this->contactService->send($payload);
 

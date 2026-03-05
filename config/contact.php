@@ -5,4 +5,5 @@ return [
 
     // hard-coded thread id (topic)
     'telegram_thread_id' => 93,
+    'member_telegram_thread_id' => 99,
 ];

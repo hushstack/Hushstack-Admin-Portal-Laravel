@@ -8,6 +8,8 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\Api\Admin\UserAdminController;
+use App\Http\Controllers\Api\Admin\UserRequestController;
+use App\Http\Controllers\Api\MemberRequestController;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -32,6 +34,7 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::post('/contact', [\App\Http\Controllers\Api\ContactController::class, 'send']);
+Route::post('/member/request', [MemberRequestController::class, 'store']);
 
 Route::middleware('auth:sanctum')->prefix('profile')->group(function () {
     Route::get('header',        [ProfileController::class, 'header']);
@@ -50,4 +53,5 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::get('users/search', [UserAdminController::class, 'search']);
     Route::get('users/{user}', [UserAdminController::class, 'show']);
     Route::delete('users/{user}', [UserAdminController::class, 'destroy']);
+    Route::get('user-requests', [UserRequestController::class, 'index']);
 });

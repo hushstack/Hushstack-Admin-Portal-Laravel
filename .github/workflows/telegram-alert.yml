@@ -1,0 +1,60 @@
+name: Telegram GitHub Alerts
+
+on:
+  push:
+  create:
+  pull_request:
+    types: [closed]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Telegram alert
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_ID: ${{ secrets.TELEGRAM_THREAD_ID || '114' }}
+          EVENT_NAME: ${{ github.event_name }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          REF_NAME: ${{ github.ref_name }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          CREATED_REF_TYPE: ${{ github.event.ref_type }}
+          CREATED_REF: ${{ github.event.ref }}
+        run: |
+          set -e
+
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID secret."
+            exit 1
+          fi
+
+          if [ "$EVENT_NAME" = "push" ]; then
+            TEXT="🚀 Push Alert\nRepository: $REPO\nBy: $ACTOR\nBranch: $REF_NAME\nCommit: $COMMIT_MESSAGE"
+          elif [ "$EVENT_NAME" = "create" ] && [ "$CREATED_REF_TYPE" = "branch" ]; then
+            TEXT="🌱 New Branch Created\nRepository: $REPO\nBy: $ACTOR\nBranch: $CREATED_REF"
+          elif [ "$EVENT_NAME" = "pull_request" ] && [ "$PR_MERGED" = "true" ]; then
+            TEXT="✅ Pull Request Merged\nRepository: $REPO\nBy: $ACTOR\nTitle: $PR_TITLE\nURL: $PR_URL"
+          else
+            echo "No message to send for this event."
+            exit 0
+          fi
+
+          # Default thread id to 114 if not provided via secret
+          TELEGRAM_THREAD_ID=${TELEGRAM_THREAD_ID:-114}
+
+          CURL_ARGS=(
+            -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}"
+            --data-urlencode "text=${TEXT}"
+          )
+
+          if [ -n "$TELEGRAM_THREAD_ID" ]; then
+            CURL_ARGS+=(--data-urlencode "message_thread_id=${TELEGRAM_THREAD_ID}")
+          fi
+
+          curl "${CURL_ARGS[@]}"

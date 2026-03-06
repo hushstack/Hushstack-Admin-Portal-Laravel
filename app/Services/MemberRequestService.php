@@ -1,15 +1,14 @@
 <?php
 
-namespace App\Services\Contact;
+namespace App\Services;
 
-use App\Jobs\Contact\SendContactJob;
+use App\Jobs\Member\SendMemberRequestJob;
 use App\Models\UserRequest;
 
-class ContactService
+class MemberRequestService
 {
     public function send(array $payload): void
     {
-        // You can add metadata if you want
         $submittedAt = now();
         $payload['submitted_at'] = $submittedAt->toDateTimeString();
         $payload['app_name'] = config('app.name');
@@ -19,13 +18,14 @@ class ContactService
             'name' => $payload['name'],
             'email' => $payload['email'],
             'message' => $payload['message'],
-            'type_req' => 'contact',
+            'type_req' => 'member',
+            'telegram_number' => $payload['telegram_number'],
             'ip_address' => $payload['ip_address'] ?? null,
             'app_name' => $payload['app_name'],
             'app_url' => $payload['app_url'],
             'submitted_at' => $submittedAt,
         ]);
 
-        SendContactJob::dispatch($payload);
+        SendMemberRequestJob::dispatch($payload);
     }
 }

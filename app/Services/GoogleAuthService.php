@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
-class MicrosoftAuthService
+class GoogleAuthService
 {
     private const STATE_TTL_SECONDS = 600;
 
@@ -22,48 +22,49 @@ class MicrosoftAuthService
             'redirect_to' => $redirectTo,
             'ts' => time(),
             'nonce' => Str::random(16),
-            'provider' => 'microsoft',
+            'provider' => 'google',
         ]);
 
-        return Socialite::driver('microsoft')
+        return Socialite::driver('google')
             ->stateless()
             ->with([
                 'state' => $state,
-                // Force Microsoft to ask account selection each login.
-                'prompt' => 'select_account',
+                // Force Google to always show account picker + consent screen.
+                'prompt' => 'select_account consent',
             ])
             ->redirect();
     }
 
     /**
-     * @return array{success:bool,status?:int,message?:string,error?:string,user?:User,redirect_to?:string,wants_json?:bool}
+     * @return array{success:bool,status?:int,message?:string,user?:User,redirect_to?:string,wants_json?:bool}
      */
     public function handleCallback(Request $request): array
     {
         try {
-            $ms = Socialite::driver('microsoft')
-                ->stateless()
-                ->user();
+            $googleUser = Socialite::driver('google')->stateless()->user();
 
-            $provider = 'microsoft';
-            $providerId = (string) $ms->getId();
-            $email = $ms->getEmail();
-            $name = $ms->getName() ?: ($ms->getNickname() ?: 'Microsoft User');
+            $provider = 'google';
+            $providerId = (string) $googleUser->getId();
+            $email = $googleUser->getEmail();
+            $name = $googleUser->getName() ?: 'Google User';
+            $avatar = $googleUser->getAvatar();
+            $raw = is_array($googleUser->user ?? null) ? $googleUser->user : [];
+            $emailVerified = (bool) ($raw['verified_email'] ?? false);
 
             $user = User::where('provider', $provider)
                 ->where('provider_id', $providerId)
                 ->first();
 
-            if (!$user && $email) {
+            if (!$user && $email && $emailVerified) {
                 $user = User::where('email', $email)->first();
             }
 
             if (!$user) {
-                if (!$email) {
+                if (!$email || !$emailVerified) {
                     return [
                         'success' => false,
                         'status' => 422,
-                        'message' => 'Microsoft did not return an email. Please allow email permission or use another login method.',
+                        'message' => 'Google account must provide a verified email address.',
                     ];
                 }
 
@@ -79,11 +80,13 @@ class MicrosoftAuthService
                     'last_name' => $last,
                     'username' => $this->makeUsername($email),
                     'email' => $email,
+                    'social_login_key' => 'google_' . Str::lower(Str::random(10)),
                     'password' => Hash::make(Str::random(32)),
                     'is_verified' => true,
                     'email_verified_at' => now(),
                     'provider' => $provider,
                     'provider_id' => $providerId,
+                    'picture' => $avatar,
                     'role_id' => $roleId,
                 ]);
             } else {
@@ -92,6 +95,7 @@ class MicrosoftAuthService
                     'provider_id' => $user->provider_id ?: $providerId,
                     'is_verified' => true,
                     'email_verified_at' => $user->email_verified_at ?: now(),
+                    'picture' => $user->picture ?: $avatar,
                 ]);
             }
 
@@ -105,15 +109,14 @@ class MicrosoftAuthService
                 'wants_json' => $this->wantsJson($request),
             ];
         } catch (\Throwable $e) {
-            Log::warning('Microsoft login failed.', [
+            Log::warning('Google login failed.', [
                 'error' => $e->getMessage(),
             ]);
 
             return [
                 'success' => false,
                 'status' => 422,
-                'message' => 'Microsoft login failed.',
-                'error' => $e->getMessage(),
+                'message' => 'Google login failed.',
             ];
         }
     }
@@ -175,7 +178,7 @@ class MicrosoftAuthService
             return [];
         }
 
-        if (($data['provider'] ?? null) !== 'microsoft') {
+        if (($data['provider'] ?? null) !== 'google') {
             return [];
         }
 
@@ -189,14 +192,13 @@ class MicrosoftAuthService
 
     private function stateSigningKey(): string
     {
-        return (string) config('app.key', 'microsoft-oauth-state-fallback-key');
+        return (string) config('app.key', 'google-oauth-state-fallback-key');
     }
 
     private function splitName(string $name): array
     {
         $parts = preg_split('/\s+/', trim($name), -1, PREG_SPLIT_NO_EMPTY);
-
-        $first = $parts[0] ?? 'Microsoft';
+        $first = $parts[0] ?? 'Google';
         $last = count($parts) > 1 ? implode(' ', array_slice($parts, 1)) : 'User';
 
         return [$first, $last];

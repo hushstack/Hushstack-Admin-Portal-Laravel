@@ -24,9 +24,23 @@ class UserResource extends JsonResource
             'birth_of_date' => optional($this->birth_of_date)->toDateString(),
             'age' => $this->age,
             'nationality_id' => $this->nationality_id,
+            'nationality' => $this->whenLoaded('nationality', function () {
+                return [
+                    'id' => $this->nationality->id,
+                    'name' => $this->nationality->name ?? null,
+                ];
+            }),
             'contact_url' => $this->contact_url,
             'address' => $this->address,
             'provider' => $this->provider,
+            'role_id' => $this->role_id,
+            'role' => $this->whenLoaded('role', function () {
+                return [
+                    'id' => $this->role->id,
+                    'name' => $this->role->name,
+                    'slug' => $this->role->slug,
+                ];
+            }),
             'email_verified_at' => optional($this->email_verified_at)->toISOString(),
             'created_at' => optional($this->created_at)->toISOString(),
             'updated_at' => optional($this->updated_at)->toISOString(),

@@ -18,6 +18,7 @@ class RegisterRequest extends FormRequest
             'phone_number' => ['required','string','max:30','unique:users,phone_number'],
             'birth_of_date' => ['required','date'],
             'password' => ['required','string','min:8','confirmed'],
+            'role_id' => ['prohibited'],
         ];
     }
 }

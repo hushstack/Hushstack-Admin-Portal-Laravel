@@ -18,12 +18,12 @@ class MicrosoftAuthController extends Controller
 
     public function redirect(Request $request)
     {
-        return $this->microsoft->redirect();
+        return $this->microsoft->redirect($request);
     }
 
     public function callback(MicrosoftCallbackRequest $request)
     {
-        $result = $this->microsoft->handleCallback();
+        $result = $this->microsoft->handleCallback($request);
 
         if (!$result['success']) {
             return response()->json([
@@ -33,7 +33,7 @@ class MicrosoftAuthController extends Controller
             ], $result['status'] ?? 422);
         }
 
-        $user = $result['user'];
+        $user = $result['user']->load('role');
         $token = $this->auth->issueToken($user);
 
         $payload = [
@@ -42,25 +42,10 @@ class MicrosoftAuthController extends Controller
             'user' => (new UserResource($user))->toArray(request()),
         ];
 
-        // ---- Redirect support (NEW)
-        $state = $request->query('state');
-        $json = base64_decode(strtr($state ?? '', '-_', '+/'));
-        $arr = json_decode($json ?: '', true) ?: [];
-        $redirectTo = $arr['redirect_to'] ?? null;
+        $redirectTo = $result['redirect_to'] ?? null;
+        $wantsJson = (bool) ($result['wants_json'] ?? false);
 
-        // validate exact match against whitelist
-        $allowed = config('services.frontend_redirect_whitelist', []);
-        $redirectTo = $redirectTo ? rtrim($redirectTo, '/') : null;
-
-        $ok = false;
-        if ($redirectTo) {
-            foreach ($allowed as $a) {
-                if ($redirectTo === rtrim($a, '/')) { $ok = true; break; }
-            }
-        }
-        if (!$ok) $redirectTo = null;
-
-        if ($redirectTo && !$request->expectsJson()) {
+        if ($redirectTo && !$wantsJson) {
             $query = http_build_query([
                 'token' => $payload['token'],
                 'user'  => json_encode($payload['user']),

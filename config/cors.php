@@ -19,7 +19,12 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => [
+        'http://localhost:3000',
+        'https://portal.hushstackcambodia.site',
+        'https://portfolio.hushstackcambodia.site',
+        'https://hushstackcambodia.site',
+    ],
 
     'allowed_origins_patterns' => [],
 

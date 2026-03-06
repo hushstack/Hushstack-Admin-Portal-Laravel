@@ -57,13 +57,14 @@ class SendRoleAssignmentAlertJob implements ShouldQueue
             . "🔑 *Role Set To:* {$role}\n"
             . "⏰ *When:* {$this->escape($dateOnly)}\n"
             . "━━━━━━━━━━━━━━━━━━\n"
-            . "If this was not expected, please review recent admin activity.";
+            . "_If this was not expected, review recent admin activity._";
 
         $response = Http::timeout(15)->post("https://api.telegram.org/bot{$token}/sendMessage", [
             'chat_id' => $chatId,
             'message_thread_id' => $threadId,
             'text' => $text,
-            'parse_mode' => 'MarkdownV2',
+            // Markdown is more forgiving than MarkdownV2 for punctuation in static strings.
+            'parse_mode' => 'Markdown',
             'disable_web_page_preview' => true,
         ]);
 

@@ -14,10 +14,6 @@ class CategoryResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'image' => $this->image,
-            'department_id' => $this->department_id,
-            'user_id' => $this->user_id,
-            'created_at' => $this->formatDate($this->created_at),
-            'updated_at' => $this->formatDate($this->updated_at),
             'department' => $this->whenLoaded('department', function () {
                 return [
                     'id' => $this->department->id,
@@ -25,11 +21,23 @@ class CategoryResource extends JsonResource
                     'slug' => $this->department->slug,
                 ];
             }),
+            'user' => $this->user ? [
+                'id' => $this->user->id,
+                'name' => $this->userDisplayName(),
+            ] : null,
+            'created_at' => $this->formatDate($this->created_at),
+            'updated_at' => $this->formatDate($this->updated_at),
         ];
     }
 
     private function formatDate($value): ?string
     {
         return optional($value)->format('M d Y');
+    }
+
+    private function userDisplayName(): string
+    {
+        $name = trim(($this->user->first_name ?? '') . ' ' . ($this->user->last_name ?? ''));
+        return $name !== '' ? $name : ($this->user->username ?? $this->user->email ?? 'User');
     }
 }

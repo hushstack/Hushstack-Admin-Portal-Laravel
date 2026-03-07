@@ -29,6 +29,7 @@ class BrandController extends Controller
             ->when($this->isPartner($request) || $this->isUser($request), function ($query) use ($request) {
                 $query->where('user_id', $request->user()->id);
             })
+            ->with('user')
             ->orderBy('name')
             ->paginate($perPage);
 

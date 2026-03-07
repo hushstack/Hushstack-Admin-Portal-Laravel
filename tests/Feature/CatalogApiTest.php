@@ -53,8 +53,9 @@ class CatalogApiTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonPath('data.name', 'Test Product')
-            ->assertJsonPath('data.category_id', $category->id)
-            ->assertJsonPath('data.brand_id', $brand->id);
+            ->assertJsonPath('data.category.id', $category->id)
+            ->assertJsonPath('data.brand.id', $brand->id)
+            ->assertJsonPath('data.user.id', $partner->id);
 
         $this->assertDatabaseHas('products', ['sku' => 'SKU-12345']);
     }
@@ -69,7 +70,7 @@ class CatalogApiTest extends TestCase
         ]);
 
         $response->assertStatus(201)
-            ->assertJsonPath('data.user_id', $user->id);
+            ->assertJsonPath('data.user.id', $user->id);
     }
 
     public function test_partner_cannot_update_product_created_by_someone_else(): void

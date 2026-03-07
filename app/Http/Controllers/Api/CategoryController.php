@@ -32,7 +32,8 @@ class CategoryController extends Controller
                 $query->where('user_id', $request->user()->id);
             })
             ->when($departmentId, fn ($query) => $query->where('department_id', $departmentId))
-            ->when($withDepartment, fn ($query) => $query->with('department'))
+            ->when($withDepartment, fn ($query) => $query->with(['department', 'department.user']))
+            ->with('user')
             ->orderBy('name')
             ->paginate($perPage);
 
@@ -41,7 +42,7 @@ class CategoryController extends Controller
 
     public function show(Category $category)
     {
-        $category->load('department');
+        $category->load(['department', 'user']);
 
         if (($this->isPartner(request()) || $this->isUser(request())) &&
             $category->user_id !== request()->user()?->id) {

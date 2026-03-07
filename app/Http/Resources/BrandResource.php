@@ -14,7 +14,10 @@ class BrandResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'image' => $this->image,
-            'user_id' => $this->user_id,
+            'user' => $this->user ? [
+                'id' => $this->user->id,
+                'name' => $this->userDisplayName(),
+            ] : null,
             'created_at' => $this->formatDate($this->created_at),
             'updated_at' => $this->formatDate($this->updated_at),
         ];
@@ -23,5 +26,11 @@ class BrandResource extends JsonResource
     private function formatDate($value): ?string
     {
         return optional($value)->format('M d Y');
+    }
+
+    private function userDisplayName(): string
+    {
+        $name = trim(($this->user->first_name ?? '') . ' ' . ($this->user->last_name ?? ''));
+        return $name !== '' ? $name : ($this->user->username ?? $this->user->email ?? 'User');
     }
 }

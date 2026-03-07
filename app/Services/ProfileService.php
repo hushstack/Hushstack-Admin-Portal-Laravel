@@ -3,11 +3,15 @@
 namespace App\Services;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Storage;
+use App\Services\UploadService;
 use Illuminate\Validation\ValidationException;
 
 class ProfileService
 {
+    public function __construct(private readonly UploadService $uploadService)
+    {
+    }
+
     public function updatePersonalInformation(User $user, array $data): User
     {
         // Simple fields
@@ -122,7 +126,7 @@ class ProfileService
 
         // Upload picture
         if (!empty($data['picture'])) {
-            $user->picture = $this->uploadAndReplace(
+            $user->picture = $this->uploadService->uploadAndReplace(
                 $data['picture'],
                 $user->picture,
                 'users/profile_pictures'
@@ -131,7 +135,7 @@ class ProfileService
 
         // Upload cover
         if (!empty($data['cover'])) {
-            $user->cover = $this->uploadAndReplace(
+            $user->cover = $this->uploadService->uploadAndReplace(
                 $data['cover'],
                 $user->cover,
                 'users/profile_covers'
@@ -141,42 +145,5 @@ class ProfileService
         $user->save();
 
         return $user->refresh();
-    }
-
-    /**
-     * Upload new file to R2 and delete old one if exists.
-     */
-    protected function uploadAndReplace($file, ?string $oldPathOrUrl, string $directory): string
-    {
-        $disk = Storage::disk('r2');
-
-        // Delete old if we can resolve a path
-        if ($oldPathOrUrl) {
-            $oldPath = $this->extractR2Path($oldPathOrUrl);
-            if ($oldPath) {
-                $disk->delete($oldPath);
-            }
-        }
-
-        // Store new file
-        $path = $file->store($directory, 'r2');
-
-        // Return full URL so frontend can use directly
-        return $disk->url($path);
-    }
-
-    /**
-     * Extract relative R2 path from full URL or plain path.
-     */
-    protected function extractR2Path(string $urlOrPath): string
-    {
-        $diskConfig = config('filesystems.disks.r2');
-        $baseUrl = rtrim($diskConfig['url'] ?? '', '/');
-
-        if ($baseUrl && str_starts_with($urlOrPath, $baseUrl)) {
-            return ltrim(substr($urlOrPath, strlen($baseUrl)), '/');
-        }
-
-        return ltrim($urlOrPath, '/');
     }
 }

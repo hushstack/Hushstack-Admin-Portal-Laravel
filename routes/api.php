@@ -11,6 +11,10 @@ use App\Http\Controllers\Api\Admin\UserAdminController;
 use App\Http\Controllers\Api\Admin\UserRequestController;
 use App\Http\Controllers\Api\Admin\UserActivityController;
 use App\Http\Controllers\Api\MemberRequestController;
+use App\Http\Controllers\Api\DepartmentController;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\BrandController;
+use App\Http\Controllers\Api\ProductController;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -56,4 +60,18 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::delete('users/{user}', [UserAdminController::class, 'destroy']);
     Route::get('user-requests', [UserRequestController::class, 'index']);
     Route::get('user-activities', [UserActivityController::class, 'index']);
+});
+
+Route::middleware(['auth:sanctum', 'catalog_editor'])->prefix('admin')->group(function () {
+    Route::apiResource('departments', DepartmentController::class)->except(['index', 'show']);
+    Route::apiResource('categories', CategoryController::class)->except(['index', 'show']);
+    Route::apiResource('brands', BrandController::class)->except(['index', 'show']);
+    Route::apiResource('products', ProductController::class)->except(['index', 'show']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('departments', DepartmentController::class)->only(['index', 'show']);
+    Route::apiResource('categories', CategoryController::class)->only(['index', 'show']);
+    Route::apiResource('brands', BrandController::class)->only(['index', 'show']);
+    Route::apiResource('products', ProductController::class)->only(['index', 'show']);
 });

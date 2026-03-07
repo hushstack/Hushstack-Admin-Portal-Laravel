@@ -24,7 +24,6 @@ class CategoryController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->integer('per_page', 15);
-        $withDepartment = $request->boolean('with_department');
         $departmentId = $request->integer('department_id');
 
         $categories = Category::query()
@@ -32,8 +31,7 @@ class CategoryController extends Controller
                 $query->where('user_id', $request->user()->id);
             })
             ->when($departmentId, fn ($query) => $query->where('department_id', $departmentId))
-            ->when($withDepartment, fn ($query) => $query->with(['department', 'department.user']))
-            ->with('user')
+            ->with(['department', 'department.user', 'user'])
             ->orderBy('name')
             ->paginate($perPage);
 

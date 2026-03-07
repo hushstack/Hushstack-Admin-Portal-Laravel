@@ -8,7 +8,7 @@
 ## Role Access
 - Middleware `catalog_editor` (`auth:sanctum`) allows roles: `admin`, `partner`, `user`.
 - Routes: `/api/admin/{departments|categories|brands|products}` for CRUD.
-- Read routes (`/api/{departments|categories|brands|products}`) now require `auth:sanctum`; results are owner-filtered for partner/user, unrestricted for admin.
+- Read routes (`/api/{departments|categories|brands|products}`) now require `auth:sanctum`; results are owner-filtered for partner/user, unrestricted for admin. All foreign keys are returned as objects `{ id, name }` (no raw `_id` fields) for clarity in clients.
 
 ## Create Limits (role: user)
 - Per-entity cap: 5 records per user. On create, a 403 is returned if the quota is exceeded.

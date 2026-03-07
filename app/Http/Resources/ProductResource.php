@@ -23,19 +23,12 @@ class ProductResource extends JsonResource
                 return [
                     'id' => $this->category->id,
                     'name' => $this->category->name,
-                    'slug' => $this->category->slug,
-                    'department' => $this->category->relationLoaded('department') ? [
-                        'id' => $this->category->department->id,
-                        'name' => $this->category->department->name,
-                        'slug' => $this->category->department->slug,
-                    ] : null,
                 ];
             }),
             'brand' => $this->whenLoaded('brand', function () {
                 return [
                     'id' => $this->brand->id,
                     'name' => $this->brand->name,
-                    'slug' => $this->brand->slug,
                 ];
             }),
             'user' => $this->user ? [

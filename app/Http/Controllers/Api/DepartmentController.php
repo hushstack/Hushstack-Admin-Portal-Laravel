@@ -31,6 +31,7 @@ class DepartmentController extends Controller
                 $query->where('user_id', $request->user()->id);
             })
             ->when($withCategories, fn ($query) => $query->with('categories'))
+            ->with('user')
             ->orderBy('name')
             ->paginate($perPage);
 
@@ -39,7 +40,7 @@ class DepartmentController extends Controller
 
     public function show(Department $department)
     {
-        $department->load('categories');
+        $department->load(['categories', 'user']);
 
         if (($this->isPartner(request()) || $this->isUser(request())) &&
             $department->user_id !== request()->user()?->id) {

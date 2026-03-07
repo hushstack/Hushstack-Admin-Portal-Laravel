@@ -30,7 +30,7 @@ class ProductController extends Controller
         $isStock = $request->has('is_stock') ? $request->boolean('is_stock') : null;
 
         $products = Product::query()
-            ->with(['category', 'brand'])
+            ->with(['category', 'category.department', 'brand', 'user'])
             ->when($this->isPartner($request) || $this->isUser($request), function ($query) use ($request) {
                 $query->where('user_id', $request->user()->id);
             })
@@ -48,7 +48,7 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
-        $product->load(['category', 'brand']);
+        $product->load(['category', 'category.department', 'brand', 'user']);
 
         if (($this->isPartner(request()) || $this->isUser(request())) &&
             $product->user_id !== request()->user()?->id) {

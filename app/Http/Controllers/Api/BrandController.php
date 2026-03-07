@@ -38,6 +38,8 @@ class BrandController extends Controller
 
     public function show(Brand $brand)
     {
+        $brand->load('user');
+
         if (($this->isPartner(request()) || $this->isUser(request())) &&
             $brand->user_id !== request()->user()?->id) {
             return $this->errorResponse('Forbidden.', 403);

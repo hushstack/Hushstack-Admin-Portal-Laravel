@@ -14,12 +14,10 @@ class CategoryResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'image' => $this->image,
-            'department' => $this->whenLoaded('department', function () {
-                return [
-                    'id' => $this->department->id,
-                    'name' => $this->department->name,
-                ];
-            }),
+            'department' => $this->department ? [
+                'id' => $this->department->id,
+                'name' => $this->department->name,
+            ] : null,
             'user' => $this->user ? [
                 'id' => $this->user->id,
                 'name' => $this->userDisplayName(),

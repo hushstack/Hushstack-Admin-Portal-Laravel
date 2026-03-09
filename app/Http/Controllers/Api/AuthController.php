@@ -44,18 +44,14 @@ class AuthController extends Controller
         $data = $request->validated();
 
         $user = User::where('email', $data['email'])->first();
-        if (!$user) {
-            return response()->json(['success' => false, 'message' => 'User not found'], 404);
-        }
-
-        if ($user->is_verified) {
+        if ($user?->is_verified) {
             return response()->json([
                 'success' => true,
-                'message' => 'Email already verified. You can login now.',
+                'message' => 'Email verified successfully. You can login now.',
             ]);
         }
 
-        if (!$this->otp->verify($user, $data['otp'])) {
+        if (!$user || !$this->otp->verify($user, $data['otp'])) {
             return response()->json(['success' => false, 'message' => 'Invalid or expired OTP'], 422);
         }
 
@@ -108,24 +104,15 @@ class AuthController extends Controller
         $request->validate(['email' => ['required', 'email']]);
 
         $user = User::where('email', $request->email)->first();
-
-        // don’t reveal existence
-        if (!$user) {
-            return response()->json(['success' => true, 'message' => 'If email exists, OTP resent.']);
-        }
-
-        if ($user->is_verified) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Email already verified. No OTP needed.',
-            ]);
-        }
-
-        $ok = $this->otp->resend($user, 10);
+        $ok = $user && !$user->is_verified
+            ? $this->otp->resend($user, 10)
+            : false;
 
         return response()->json([
             'success' => true,
-            'message' => $ok ? 'OTP resent.' : 'Please wait before resending OTP.',
+            'message' => $ok
+                ? 'If the email exists and requires verification, OTP resent.'
+                : 'If the email exists and requires verification, a new OTP will be sent when eligible.',
         ]);
     }
 

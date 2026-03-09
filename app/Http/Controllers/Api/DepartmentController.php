@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\Concerns\InteractsWithCatalogOwnership;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Department\StoreDepartmentRequest;
 use App\Http\Requests\Department\UpdateDepartmentRequest;
 use App\Http\Resources\DepartmentResource;
 use App\Models\Department;
-use App\Models\Role;
 use App\Services\UploadService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
@@ -16,6 +16,7 @@ use Illuminate\Support\Str;
 class DepartmentController extends Controller
 {
     use ApiResponseTrait;
+    use InteractsWithCatalogOwnership;
 
     public function __construct(private readonly UploadService $uploadService)
     {
@@ -42,8 +43,7 @@ class DepartmentController extends Controller
     {
         $department->load(['categories', 'user']);
 
-        if (($this->isPartner(request()) || $this->isUser(request())) &&
-            $department->user_id !== request()->user()?->id) {
+        if ($this->violatesOwnership(request(), $department->user_id)) {
             return $this->errorResponse('Forbidden.', 403);
         }
 
@@ -79,7 +79,7 @@ class DepartmentController extends Controller
 
     public function update(UpdateDepartmentRequest $request, Department $department)
     {
-        if ($this->isPartner($request) && $department->user_id !== $request->user()->id) {
+        if ($this->violatesOwnership($request, $department->user_id)) {
             return $this->errorResponse('Forbidden.', 403);
         }
 
@@ -113,28 +113,12 @@ class DepartmentController extends Controller
 
     public function destroy(Department $department)
     {
-        $user = request()->user();
-        if ($this->isPartner(request()) && $department->user_id !== $user?->id) {
+        if ($this->violatesOwnership(request(), $department->user_id)) {
             return $this->errorResponse('Forbidden.', 403);
         }
 
         $department->delete();
 
         return $this->successResponse(null, 'Department deleted.');
-    }
-
-    private function isPartner(Request $request): bool
-    {
-        return $request->user()?->role?->slug === Role::PARTNER_SLUG;
-    }
-
-    private function isUser(Request $request): bool
-    {
-        return $request->user()?->role?->slug === Role::USER_SLUG;
-    }
-
-    private function ownsTooMany(Request $request, string $modelClass): bool
-    {
-        return $modelClass::where('user_id', $request->user()->id)->count() >= 5;
     }
 }

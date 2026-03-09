@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'admin_email' => env('CONTACT_ADMIN_EMAIL', 'hushstack168@gmail.com'),
+    'admin_email' => env('CONTACT_ADMIN_EMAIL'),
 
     // hard-coded thread id (topic)
     'telegram_thread_id' => 93,

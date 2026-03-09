@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Category;
 
+use App\Models\Role;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -24,7 +26,19 @@ class UpdateCategoryRequest extends FormRequest
                 Rule::unique('categories', 'slug')->ignore($category),
             ],
             'image' => ['sometimes', 'nullable', 'image', 'max:5120'],
-            'department_id' => ['sometimes', 'required', 'integer', Rule::exists('departments', 'id')],
+            'department_id' => ['sometimes', 'required', 'integer', $this->departmentExistsRule()],
         ];
+    }
+
+    private function departmentExistsRule()
+    {
+        $rule = Rule::exists('departments', 'id');
+        $user = $this->user();
+
+        if ($user && in_array($user->role?->slug, [Role::PARTNER_SLUG, Role::USER_SLUG], true)) {
+            $rule = $rule->where(fn (Builder $query) => $query->where('user_id', $user->id));
+        }
+
+        return $rule;
     }
 }

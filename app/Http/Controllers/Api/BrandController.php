@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\Concerns\InteractsWithCatalogOwnership;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Brand\StoreBrandRequest;
 use App\Http\Requests\Brand\UpdateBrandRequest;
 use App\Http\Resources\BrandResource;
 use App\Models\Brand;
-use App\Models\Role;
 use App\Services\UploadService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
@@ -16,6 +16,7 @@ use Illuminate\Support\Str;
 class BrandController extends Controller
 {
     use ApiResponseTrait;
+    use InteractsWithCatalogOwnership;
 
     public function __construct(private readonly UploadService $uploadService)
     {
@@ -40,8 +41,7 @@ class BrandController extends Controller
     {
         $brand->load('user');
 
-        if (($this->isPartner(request()) || $this->isUser(request())) &&
-            $brand->user_id !== request()->user()?->id) {
+        if ($this->violatesOwnership(request(), $brand->user_id)) {
             return $this->errorResponse('Forbidden.', 403);
         }
 
@@ -77,7 +77,7 @@ class BrandController extends Controller
 
     public function update(UpdateBrandRequest $request, Brand $brand)
     {
-        if ($this->isPartner($request) && $brand->user_id !== $request->user()->id) {
+        if ($this->violatesOwnership($request, $brand->user_id)) {
             return $this->errorResponse('Forbidden.', 403);
         }
 
@@ -111,28 +111,12 @@ class BrandController extends Controller
 
     public function destroy(Brand $brand)
     {
-        $user = request()->user();
-        if ($this->isPartner(request()) && $brand->user_id !== $user?->id) {
+        if ($this->violatesOwnership(request(), $brand->user_id)) {
             return $this->errorResponse('Forbidden.', 403);
         }
 
         $brand->delete();
 
         return $this->successResponse(null, 'Brand deleted.');
-    }
-
-    private function isPartner(Request $request): bool
-    {
-        return $request->user()?->role?->slug === Role::PARTNER_SLUG;
-    }
-
-    private function isUser(Request $request): bool
-    {
-        return $request->user()?->role?->slug === Role::USER_SLUG;
-    }
-
-    private function ownsTooMany(Request $request, string $modelClass): bool
-    {
-        return $modelClass::where('user_id', $request->user()->id)->count() >= 5;
     }
 }

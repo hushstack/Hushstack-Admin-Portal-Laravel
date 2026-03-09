@@ -29,7 +29,6 @@ class MicrosoftAuthController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => $result['message'] ?? 'Microsoft login failed.',
-                'error' => $result['error'] ?? null,
             ], $result['status'] ?? 422);
         }
 
@@ -46,12 +45,12 @@ class MicrosoftAuthController extends Controller
         $wantsJson = (bool) ($result['wants_json'] ?? false);
 
         if ($redirectTo && !$wantsJson) {
-            $query = http_build_query([
+            $fragment = http_build_query([
                 'token' => $payload['token'],
                 'user'  => json_encode($payload['user']),
             ]);
 
-            return redirect()->away($redirectTo . '?' . $query);
+            return redirect()->away($redirectTo . '#' . $fragment);
         }
 
         return response()->json([

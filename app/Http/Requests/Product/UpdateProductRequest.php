@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Product;
 
+use App\Models\Role;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -35,9 +37,21 @@ class UpdateProductRequest extends FormRequest
             'image' => ['sometimes', 'nullable', 'image', 'max:5120'],
             'price' => ['sometimes', 'required', 'numeric', 'min:0'],
             'qty' => ['sometimes', 'required', 'integer', 'min:0'],
-            'category_id' => ['sometimes', 'required', 'integer', Rule::exists('categories', 'id')],
-            'brand_id' => ['sometimes', 'nullable', 'integer', Rule::exists('brands', 'id')],
+            'category_id' => ['sometimes', 'required', 'integer', $this->catalogOwnerExistsRule('categories')],
+            'brand_id' => ['sometimes', 'nullable', 'integer', $this->catalogOwnerExistsRule('brands')],
             'is_stock' => ['sometimes', 'boolean'],
         ];
+    }
+
+    private function catalogOwnerExistsRule(string $table)
+    {
+        $rule = Rule::exists($table, 'id');
+        $user = $this->user();
+
+        if ($user && in_array($user->role?->slug, [Role::PARTNER_SLUG, Role::USER_SLUG], true)) {
+            $rule = $rule->where(fn (Builder $query) => $query->where('user_id', $user->id));
+        }
+
+        return $rule;
     }
 }

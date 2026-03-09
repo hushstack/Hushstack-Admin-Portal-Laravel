@@ -17,13 +17,13 @@ use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\ProductController;
 
 Route::prefix('auth')->group(function () {
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:auth.register');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:auth.login');
 
-    Route::post('/verify-email-otp', [AuthController::class, 'verifyEmailOtp']);
-    Route::post('/resend-otp', [AuthController::class, 'resendOtp']);
+    Route::post('/verify-email-otp', [AuthController::class, 'verifyEmailOtp'])->middleware('throttle:auth.otp.verify');
+    Route::post('/resend-otp', [AuthController::class, 'resendOtp'])->middleware('throttle:auth.otp.resend');
 
-    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:auth.password.forgot');
 
     Route::get('/google/redirect', [GoogleAuthController::class, 'redirect']);
     Route::get('/google/callback', [GoogleAuthController::class, 'callback']);
@@ -38,8 +38,8 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-Route::post('/contact', [\App\Http\Controllers\Api\ContactController::class, 'send']);
-Route::post('/member/request', [MemberRequestController::class, 'store']);
+Route::post('/contact', [\App\Http\Controllers\Api\ContactController::class, 'send'])->middleware('throttle:public.contact');
+Route::post('/member/request', [MemberRequestController::class, 'store'])->middleware('throttle:public.member-request');
 
 Route::middleware('auth:sanctum')->prefix('profile')->group(function () {
     Route::get('header',        [ProfileController::class, 'header']);

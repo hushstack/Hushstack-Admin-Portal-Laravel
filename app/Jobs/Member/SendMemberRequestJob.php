@@ -25,10 +25,11 @@ class SendMemberRequestJob implements ShouldQueue
 
     public function handle(): void
     {
-        $adminEmail = config('contact.admin_email', 'hushstack168@gmail.com');
+        $adminEmail = config('contact.admin_email');
 
-        // Admin mail
-        Mail::to($adminEmail)->queue(new AdminMemberRequestMail($this->payload));
+        if ($adminEmail) {
+            Mail::to($adminEmail)->queue(new AdminMemberRequestMail($this->payload));
+        }
 
         // User confirmation
         Mail::to($this->payload['email'])->queue(new UserMemberRequestConfirmationMail($this->payload));

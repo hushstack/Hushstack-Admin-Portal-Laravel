@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Services\Concerns\HandlesSocialAuthState;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -12,18 +13,13 @@ use Laravel\Socialite\Facades\Socialite;
 
 class MicrosoftAuthService
 {
-    private const STATE_TTL_SECONDS = 600;
+    use HandlesSocialAuthState;
 
     public function redirect(Request $request)
     {
         $redirectTo = $this->validateRedirectTo($request->query('redirect_to'));
 
-        $state = $this->encodeState([
-            'redirect_to' => $redirectTo,
-            'ts' => time(),
-            'nonce' => Str::random(16),
-            'provider' => 'microsoft',
-        ]);
+        $state = $this->issueState($redirectTo, 'microsoft');
 
         return Socialite::driver('microsoft')
             ->stateless()
@@ -36,10 +32,20 @@ class MicrosoftAuthService
     }
 
     /**
-     * @return array{success:bool,status?:int,message?:string,error?:string,user?:User,redirect_to?:string,wants_json?:bool}
+     * @return array{success:bool,status?:int,message?:string,user?:User,redirect_to?:string,wants_json?:bool}
      */
     public function handleCallback(Request $request): array
     {
+        $state = $this->consumeState($request->query('state'), 'microsoft');
+
+        if (!$state) {
+            return [
+                'success' => false,
+                'status' => 422,
+                'message' => 'Invalid or expired social login state.',
+            ];
+        }
+
         try {
             $ms = Socialite::driver('microsoft')
                 ->stateless()
@@ -95,7 +101,6 @@ class MicrosoftAuthService
                 ]);
             }
 
-            $state = $this->decodeState($request->query('state'));
             $redirectTo = $this->validateRedirectTo($state['redirect_to'] ?? null);
 
             return [
@@ -113,83 +118,8 @@ class MicrosoftAuthService
                 'success' => false,
                 'status' => 422,
                 'message' => 'Microsoft login failed.',
-                'error' => $e->getMessage(),
             ];
         }
-    }
-
-    private function validateRedirectTo(?string $redirectTo): ?string
-    {
-        if (!$redirectTo) {
-            return null;
-        }
-
-        $allowed = config('services.frontend_redirect_whitelist', []);
-        $redirectTo = rtrim($redirectTo, '/');
-
-        foreach ($allowed as $candidate) {
-            if ($redirectTo === rtrim($candidate, '/')) {
-                return $redirectTo;
-            }
-        }
-
-        return null;
-    }
-
-    private function wantsJson(Request $request): bool
-    {
-        return $request->expectsJson()
-            || str_contains($request->header('Accept', ''), 'application/json')
-            || $request->query('json') === '1';
-    }
-
-    private function encodeState(array $data): string
-    {
-        $json = json_encode($data, JSON_UNESCAPED_SLASHES);
-        $payload = rtrim(strtr(base64_encode($json ?: '{}'), '+/', '-_'), '=');
-        $signature = hash_hmac('sha256', $payload, $this->stateSigningKey());
-
-        return $payload . '.' . $signature;
-    }
-
-    private function decodeState(?string $state): array
-    {
-        if (!$state || !str_contains($state, '.')) {
-            return [];
-        }
-
-        [$payload, $signature] = explode('.', $state, 2);
-        $expected = hash_hmac('sha256', $payload, $this->stateSigningKey());
-
-        if (!hash_equals($expected, $signature)) {
-            return [];
-        }
-
-        $decoded = base64_decode(strtr($payload, '-_', '+/'), true);
-        if ($decoded === false) {
-            return [];
-        }
-
-        $data = json_decode($decoded, true);
-        if (!is_array($data)) {
-            return [];
-        }
-
-        if (($data['provider'] ?? null) !== 'microsoft') {
-            return [];
-        }
-
-        $ts = isset($data['ts']) ? (int) $data['ts'] : 0;
-        if ($ts <= 0 || (time() - $ts) > self::STATE_TTL_SECONDS) {
-            return [];
-        }
-
-        return $data;
-    }
-
-    private function stateSigningKey(): string
-    {
-        return (string) config('app.key', 'microsoft-oauth-state-fallback-key');
     }
 
     private function splitName(string $name): array

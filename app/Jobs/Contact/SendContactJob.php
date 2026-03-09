@@ -11,6 +11,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Http;
+use Throwable;
 
 class SendContactJob implements ShouldQueue
 {
@@ -24,10 +25,11 @@ class SendContactJob implements ShouldQueue
 
     public function handle(): void
     {
-        $adminEmail = config('contact.admin_email', 'hushstack168@gmail.com');
+        $adminEmail = config('contact.admin_email');
 
-        // 1) Email admin
-        Mail::to($adminEmail)->queue(new AdminContactMail($this->payload));
+        if ($adminEmail) {
+            Mail::to($adminEmail)->queue(new AdminContactMail($this->payload));
+        }
 
         // 2) Email user confirmation
         Mail::to($this->payload['email'])->queue(new UserContactConfirmationMail($this->payload));

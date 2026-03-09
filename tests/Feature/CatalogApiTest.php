@@ -32,8 +32,12 @@ class CatalogApiTest extends TestCase
     public function test_partner_can_create_product_via_admin_route(): void
     {
         $partner = User::factory()->create(['role_id' => $this->partnerRole->id]);
-        $category = Category::factory()->create();
-        $brand = Brand::factory()->create();
+        $department = Department::factory()->create(['user_id' => $partner->id]);
+        $category = Category::factory()->create([
+            'department_id' => $department->id,
+            'user_id' => $partner->id,
+        ]);
+        $brand = Brand::factory()->create(['user_id' => $partner->id]);
 
         Sanctum::actingAs($partner);
 
@@ -87,6 +91,37 @@ class CatalogApiTest extends TestCase
         $response->assertStatus(403);
     }
 
+    public function test_user_cannot_update_product_created_by_someone_else(): void
+    {
+        $owner = User::factory()->create(['role_id' => $this->userRole->id]);
+        $attacker = User::factory()->create(['role_id' => $this->userRole->id]);
+        $product = Product::factory()->create(['user_id' => $owner->id]);
+
+        Sanctum::actingAs($attacker);
+
+        $response = $this->patchJson('/api/admin/products/'.$product->id, ['name' => 'Hijack']);
+
+        $response->assertStatus(403);
+        $this->assertDatabaseMissing('products', [
+            'id' => $product->id,
+            'name' => 'Hijack',
+        ]);
+    }
+
+    public function test_user_cannot_delete_brand_created_by_someone_else(): void
+    {
+        $owner = User::factory()->create(['role_id' => $this->userRole->id]);
+        $attacker = User::factory()->create(['role_id' => $this->userRole->id]);
+        $brand = Brand::factory()->create(['user_id' => $owner->id]);
+
+        Sanctum::actingAs($attacker);
+
+        $response = $this->deleteJson('/api/admin/brands/'.$brand->id);
+
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('brands', ['id' => $brand->id]);
+    }
+
     public function test_user_is_limited_to_five_products(): void
     {
         $user = User::factory()->create(['role_id' => $this->userRole->id]);
@@ -119,6 +154,52 @@ class CatalogApiTest extends TestCase
         ]);
 
         $response->assertStatus(403);
+    }
+
+    public function test_user_cannot_create_product_with_foreign_category_or_brand(): void
+    {
+        $owner = User::factory()->create(['role_id' => $this->userRole->id]);
+        $attacker = User::factory()->create(['role_id' => $this->userRole->id]);
+
+        $department = Department::factory()->create(['user_id' => $owner->id]);
+        $category = Category::factory()->create([
+            'department_id' => $department->id,
+            'user_id' => $owner->id,
+        ]);
+        $brand = Brand::factory()->create(['user_id' => $owner->id]);
+
+        Sanctum::actingAs($attacker);
+
+        $response = $this->postJson('/api/admin/products', [
+            'name' => 'Cross Tenant Product',
+            'sku' => 'SKU-XTENANT-1',
+            'price' => 10,
+            'qty' => 1,
+            'category_id' => $category->id,
+            'brand_id' => $brand->id,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['category_id', 'brand_id']);
+
+        $this->assertDatabaseMissing('products', ['sku' => 'SKU-XTENANT-1']);
+    }
+
+    public function test_user_cannot_create_category_under_foreign_department(): void
+    {
+        $owner = User::factory()->create(['role_id' => $this->userRole->id]);
+        $attacker = User::factory()->create(['role_id' => $this->userRole->id]);
+        $department = Department::factory()->create(['user_id' => $owner->id]);
+
+        Sanctum::actingAs($attacker);
+
+        $response = $this->postJson('/api/admin/categories', [
+            'name' => 'Cross Tenant Category',
+            'department_id' => $department->id,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['department_id']);
     }
 
     public function test_products_list_requires_auth_and_filters_to_owner_for_users(): void

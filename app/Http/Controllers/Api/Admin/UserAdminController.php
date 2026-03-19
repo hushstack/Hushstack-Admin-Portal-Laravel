@@ -32,6 +32,12 @@ class UserAdminController extends Controller
             ->latest('id')
             ->paginate($data['per_page'] ?? 20);
 
+        try {
+            $this->activityLogger->log($request->user(), 'Viewed user list', $request->ip());
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Activity logging failed: " . $e->getMessage());
+        }
+
         return $this->successResponse([
             'data' => UserListResource::collection($users->items()),
             'page' => $users->currentPage(),
@@ -40,8 +46,6 @@ class UserAdminController extends Controller
             'total' => $users->total(),
             'last_page' => $users->lastPage(),
         ], 'Users loaded.');
-
-        $this->activityLogger->log($request->user(), 'Viewed user list', $request->ip());
     }
 
     public function search(SearchUserRequest $request)
@@ -60,7 +64,11 @@ class UserAdminController extends Controller
             ->latest('id')
             ->paginate($data['per_page'] ?? 20);
 
-        // $this->activityLogger->log($request->user(), "Searched users term: {$term}", $request->ip());
+        try {
+            $this->activityLogger->log($request->user(), "Searched users term: {$term}", $request->ip());
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Activity logging failed: " . $e->getMessage());
+        }
 
         return $this->successResponse([
             'data' => UserListResource::collection($users->items()),

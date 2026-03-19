@@ -77,7 +77,8 @@ class BrandController extends Controller
 
     public function update(UpdateBrandRequest $request, Brand $brand)
     {
-        if ($this->isPartner($request) && $brand->user_id !== $request->user()->id) {
+        // Fix IDOR/BOLA: Ensure normal users also pass ownership checks
+        if (($this->isPartner($request) || $this->isUser($request)) && $brand->user_id !== $request->user()->id) {
             return $this->errorResponse('Forbidden.', 403);
         }
 
@@ -112,7 +113,8 @@ class BrandController extends Controller
     public function destroy(Brand $brand)
     {
         $user = request()->user();
-        if ($this->isPartner(request()) && $brand->user_id !== $user?->id) {
+        // Fix IDOR/BOLA: Ensure normal users also pass ownership checks
+        if (($this->isPartner(request()) || $this->isUser(request())) && $brand->user_id !== $user?->id) {
             return $this->errorResponse('Forbidden.', 403);
         }
 

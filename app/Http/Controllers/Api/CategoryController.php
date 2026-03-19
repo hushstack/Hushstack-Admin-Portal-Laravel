@@ -79,7 +79,8 @@ class CategoryController extends Controller
 
     public function update(UpdateCategoryRequest $request, Category $category)
     {
-        if ($this->isPartner($request) && $category->user_id !== $request->user()->id) {
+        // Fix IDOR/BOLA: Ensure normal users also pass ownership checks
+        if (($this->isPartner($request) || $this->isUser($request)) && $category->user_id !== $request->user()->id) {
             return $this->errorResponse('Forbidden.', 403);
         }
 
@@ -114,7 +115,8 @@ class CategoryController extends Controller
     public function destroy(Category $category)
     {
         $user = request()->user();
-        if ($this->isPartner(request()) && $category->user_id !== $user?->id) {
+        // Fix IDOR/BOLA: Ensure normal users also pass ownership checks
+        if (($this->isPartner(request()) || $this->isUser(request())) && $category->user_id !== $user?->id) {
             return $this->errorResponse('Forbidden.', 403);
         }
 

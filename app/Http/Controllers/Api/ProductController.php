@@ -91,7 +91,8 @@ class ProductController extends Controller
 
     public function update(UpdateProductRequest $request, Product $product)
     {
-        if ($this->isPartner($request) && $product->user_id !== $request->user()->id) {
+        // Fix IDOR/BOLA: Ensure normal users also pass ownership checks
+        if (($this->isPartner($request) || $this->isUser($request)) && $product->user_id !== $request->user()->id) {
             return $this->errorResponse('Forbidden.', 403);
         }
 
@@ -136,7 +137,8 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         $user = request()->user();
-        if ($this->isPartner(request()) && $product->user_id !== $user?->id) {
+        // Fix IDOR/BOLA: Ensure normal users also pass ownership checks
+        if (($this->isPartner(request()) || $this->isUser(request())) && $product->user_id !== $user?->id) {
             return $this->errorResponse('Forbidden.', 403);
         }
 

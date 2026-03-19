@@ -60,7 +60,7 @@ class UserAdminController extends Controller
             ->latest('id')
             ->paginate($data['per_page'] ?? 20);
 
-        $this->activityLogger->log($request->user(), "Searched users term: {$term}", $request->ip());
+        // $this->activityLogger->log($request->user(), "Searched users term: {$term}", $request->ip());
 
         return $this->successResponse([
             'data' => UserListResource::collection($users->items()),

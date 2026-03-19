@@ -79,7 +79,8 @@ class DepartmentController extends Controller
 
     public function update(UpdateDepartmentRequest $request, Department $department)
     {
-        if ($this->isPartner($request) && $department->user_id !== $request->user()->id) {
+        // Fix IDOR/BOLA: Ensure normal users also pass ownership checks
+        if (($this->isPartner($request) || $this->isUser($request)) && $department->user_id !== $request->user()->id) {
             return $this->errorResponse('Forbidden.', 403);
         }
 
@@ -114,7 +115,8 @@ class DepartmentController extends Controller
     public function destroy(Department $department)
     {
         $user = request()->user();
-        if ($this->isPartner(request()) && $department->user_id !== $user?->id) {
+        // Fix IDOR/BOLA: Ensure normal users also pass ownership checks
+        if (($this->isPartner(request()) || $this->isUser(request())) && $department->user_id !== $user?->id) {
             return $this->errorResponse('Forbidden.', 403);
         }
 

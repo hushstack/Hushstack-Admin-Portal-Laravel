@@ -18,12 +18,12 @@ use App\Http\Controllers\Api\ProductController;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 
-    Route::post('/verify-email-otp', [AuthController::class, 'verifyEmailOtp']);
-    Route::post('/resend-otp', [AuthController::class, 'resendOtp']);
+    Route::post('/verify-email-otp', [AuthController::class, 'verifyEmailOtp'])->middleware('throttle:5,1');
+    Route::post('/resend-otp', [AuthController::class, 'resendOtp'])->middleware('throttle:3,1');
 
-    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:3,1');
 
     Route::get('/google/redirect', [GoogleAuthController::class, 'redirect']);
     Route::get('/google/callback', [GoogleAuthController::class, 'callback']);
@@ -62,7 +62,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::get('user-activities', [UserActivityController::class, 'index']);
 });
 
-Route::middleware(['auth:sanctum', 'catalog_editor'])->prefix('admin')->group(function () {
+Route::middleware(['auth:sanctum', 'active_catalog_user'])->prefix('admin')->group(function () {
     Route::apiResource('departments', DepartmentController::class)->except(['index', 'show']);
     Route::apiResource('categories', CategoryController::class)->except(['index', 'show']);
     Route::apiResource('brands', BrandController::class)->except(['index', 'show']);

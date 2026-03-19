@@ -17,11 +17,12 @@ class UserActivityController extends Controller
         $data = $request->validated();
 
         $activities = UserActivity::query()
+            ->with(['user', 'role'])
             ->latest('id')
             ->paginate($data['per_page'] ?? 20);
 
         return $this->successResponse([
-            'data' => UserActivityResource::collection($activities->items()),
+            'data' => UserActivityResource::collection($activities),
             'page' => $activities->currentPage(),
             'per_page' => $activities->perPage(),
             'page_total' => $activities->count(),

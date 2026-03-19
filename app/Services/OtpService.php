@@ -16,6 +16,17 @@ class OtpService
 
     public function send(User $user, int $minutes = 10): void
     {
+        // Enforce cooldown to prevent email bombing (DoS)
+        $recentOtp = Otp::where('user_id', $user->id)
+            ->whereNull('used_at')
+            ->latest()
+            ->first();
+
+        if ($recentOtp && $recentOtp->last_sent_at && now()->diffInSeconds($recentOtp->last_sent_at) < $this->resendCooldownSeconds) {
+            // Silently return to prevent enumeration and stop sending if within cooldown
+            return;
+        }
+
         DB::transaction(function () use ($user, $minutes) {
             // Only 1 active OTP per user (because no purpose)
             Otp::where('user_id', $user->id)
@@ -53,22 +64,26 @@ class OtpService
 
     public function verify(User $user, string $code): bool
     {
-        $otp = Otp::where('user_id', $user->id)
-            ->whereNull('used_at')
-            ->latest()
-            ->first();
+        return DB::transaction(function () use ($user, $code) {
+            // Lock the row for update to prevent race conditions during brute-force attempts
+            $otp = Otp::where('user_id', $user->id)
+                ->whereNull('used_at')
+                ->latest()
+                ->lockForUpdate()
+                ->first();
 
-        if (!$otp) return false;
-        if (now()->gte($otp->expires_at)) return false;
-        if ($otp->attempts >= $this->maxAttempts) return false;
+            if (!$otp) return false;
+            if (now()->gte($otp->expires_at)) return false;
+            if ($otp->attempts >= $this->maxAttempts) return false;
 
-        $otp->increment('attempts');
+            $otp->increment('attempts');
 
-        if (!Hash::check($code, $otp->code_hash)) {
-            return false;
-        }
+            if (!Hash::check($code, $otp->code_hash)) {
+                return false;
+            }
 
-        $otp->update(['used_at' => now()]);
-        return true;
+            $otp->update(['used_at' => now()]);
+            return true;
+        });
     }
 }

@@ -9,8 +9,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 
 class SendContactJob implements ShouldQueue
 {
@@ -18,9 +18,7 @@ class SendContactJob implements ShouldQueue
 
     public int $tries = 3;
 
-    public function __construct(public array $payload)
-    {
-    }
+    public function __construct(public array $payload) {}
 
     public function handle(): void
     {
@@ -38,10 +36,10 @@ class SendContactJob implements ShouldQueue
 
     private function sendTelegram(array $payload): void
     {
-        $token  = config('services.telegram.bot_token');
+        $token = config('services.telegram.bot_token');
         $chatId = config('services.telegram.chat_id');
 
-        if (!$token || !$chatId) {
+        if (! $token || ! $chatId) {
             return;
         }
 
@@ -52,7 +50,7 @@ class SendContactJob implements ShouldQueue
         // If you prefer to use submitted_at from payload (if you stored it):
         // $dateOnly = \Carbon\Carbon::parse($payload['submitted_at'] ?? now())->format('d M Y');
 
-        $name  = $this->escapeTelegram($payload['name'] ?? '-');
+        $name = $this->escapeTelegram($payload['name'] ?? '-');
         $email = $this->escapeTelegram($payload['email'] ?? '-');
 
         $message = trim((string) ($payload['message'] ?? ''));
@@ -60,13 +58,13 @@ class SendContactJob implements ShouldQueue
 
         $text =
             "📩 *New Contact Message*\n"
-            . "━━━━━━━━━━━━━━━━━━\n"
-            . "*From:* {$name}\n"
-            . "*Email:* {$email}\n"
-            . "*Date:* {$this->escapeTelegram($dateOnly)}\n"
-            . "━━━━━━━━━━━━━━━━━━\n"
-            . "*Message*\n"
-            . "{$message}\n";
+            ."━━━━━━━━━━━━━━━━━━\n"
+            ."*From:* {$name}\n"
+            ."*Email:* {$email}\n"
+            ."*Date:* {$this->escapeTelegram($dateOnly)}\n"
+            ."━━━━━━━━━━━━━━━━━━\n"
+            ."*Message*\n"
+            ."{$message}\n";
 
         Http::timeout(15)->post("https://api.telegram.org/bot{$token}/sendMessage", [
             'chat_id' => $chatId,
@@ -84,8 +82,9 @@ class SendContactJob implements ShouldQueue
     {
         $escapeChars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'];
         foreach ($escapeChars as $char) {
-            $text = str_replace($char, '\\' . $char, $text);
+            $text = str_replace($char, '\\'.$char, $text);
         }
+
         return $text;
     }
 

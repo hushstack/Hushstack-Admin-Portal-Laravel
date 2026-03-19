@@ -8,9 +8,7 @@ use App\Services\MemberRequestService;
 
 class MemberRequestController extends Controller
 {
-    public function __construct(private readonly MemberRequestService $memberRequestService)
-    {
-    }
+    public function __construct(private readonly MemberRequestService $memberRequestService) {}
 
     public function store(SendMemberRequest $request)
     {

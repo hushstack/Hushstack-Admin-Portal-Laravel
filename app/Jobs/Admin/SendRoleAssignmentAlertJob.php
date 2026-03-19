@@ -17,28 +17,27 @@ class SendRoleAssignmentAlertJob implements ShouldQueue
 
     public int $tries = 3;
 
-    public function __construct(public array $payload)
-    {
-    }
+    public function __construct(public array $payload) {}
 
     public function handle(): void
     {
-        $token  = config('services.telegram.bot_token');
+        $token = config('services.telegram.bot_token');
         $chatId = config('services.telegram.chat_id');
 
-        if (!$token || !$chatId) {
+        if (! $token || ! $chatId) {
             return;
         }
 
         // Simple per-day cap to avoid hitting Telegram limits
         $limitPerDay = 1000;
-        $counterKey = 'role_assignment_alerts:' . now()->toDateString();
+        $counterKey = 'role_assignment_alerts:'.now()->toDateString();
         $count = Cache::increment($counterKey);
         if ($count === 1) {
             Cache::put($counterKey, $count, now()->endOfDay());
         }
         if ($count > $limitPerDay) {
             Log::warning('Telegram role alert skipped: daily cap reached', ['count' => $count]);
+
             return;
         }
 
@@ -46,18 +45,18 @@ class SendRoleAssignmentAlertJob implements ShouldQueue
         $dateOnly = now()->format('d M Y, h:i A');
 
         $admin = $this->escape($this->payload['admin'] ?? '-');
-        $user  = $this->escape($this->payload['user'] ?? '-');
-        $role  = $this->escape($this->payload['role'] ?? '-');
+        $user = $this->escape($this->payload['user'] ?? '-');
+        $role = $this->escape($this->payload['role'] ?? '-');
 
         $text =
             "🚨 *Admin Role Change*\n"
-            . "━━━━━━━━━━━━━━━━━━\n"
-            . "👤 *Changed By:* {$admin}\n"
-            . "🧑 *User:* {$user}\n"
-            . "🔑 *Role Set To:* {$role}\n"
-            . "⏰ *When:* {$this->escape($dateOnly)}\n"
-            . "━━━━━━━━━━━━━━━━━━\n"
-            . "_If this was not expected, review recent admin activity._";
+            ."━━━━━━━━━━━━━━━━━━\n"
+            ."👤 *Changed By:* {$admin}\n"
+            ."🧑 *User:* {$user}\n"
+            ."🔑 *Role Set To:* {$role}\n"
+            ."⏰ *When:* {$this->escape($dateOnly)}\n"
+            ."━━━━━━━━━━━━━━━━━━\n"
+            .'_If this was not expected, review recent admin activity._';
 
         $response = Http::timeout(15)->post("https://api.telegram.org/bot{$token}/sendMessage", [
             'chat_id' => $chatId,
@@ -80,8 +79,9 @@ class SendRoleAssignmentAlertJob implements ShouldQueue
     {
         $escapeChars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'];
         foreach ($escapeChars as $char) {
-            $text = str_replace($char, '\\' . $char, $text);
+            $text = str_replace($char, '\\'.$char, $text);
         }
+
         return $text;
     }
 }

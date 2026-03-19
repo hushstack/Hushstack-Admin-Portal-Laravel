@@ -9,22 +9,20 @@ use App\Http\Resources\RoleResource;
 use App\Models\Role;
 use App\Services\ActivityLogger;
 use App\Traits\ApiResponseTrait;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class RoleController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __construct(private ActivityLogger $activityLogger)
-    {
-    }
+    public function __construct(private ActivityLogger $activityLogger) {}
 
     public function index()
     {
         $roles = Role::query()
             ->orderBy('id')
-            ->get(['id','name','slug','description','created_at','updated_at']);
+            ->get(['id', 'name', 'slug', 'description', 'created_at', 'updated_at']);
 
         return $this->successResponse(RoleResource::collection($roles), 'Roles loaded.');
     }
@@ -51,7 +49,7 @@ class RoleController extends Controller
     {
         $data = $request->validated();
 
-        if (array_key_exists('name', $data) && !array_key_exists('slug', $data)) {
+        if (array_key_exists('name', $data) && ! array_key_exists('slug', $data)) {
             $data['slug'] = Str::slug($data['name']);
         }
         if (array_key_exists('slug', $data)) {

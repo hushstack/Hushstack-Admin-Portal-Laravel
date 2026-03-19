@@ -4,14 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Profile\UpdateProfileAddressRequest;
+use App\Http\Requests\Profile\UpdateProfileHeaderRequest;
+use App\Http\Requests\Profile\UpdateProfilePersonalInfoRequest;
 use App\Http\Resources\Profile\ProfileAddressResource;
 use App\Http\Resources\Profile\ProfileHeaderResource;
 use App\Http\Resources\Profile\ProfilePersonalInfoResource;
-use App\Http\Requests\Profile\UpdateProfileHeaderRequest;
 use App\Services\ProfileService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
-use App\Http\Requests\Profile\UpdateProfilePersonalInfoRequest;
 
 class ProfileController extends Controller
 {

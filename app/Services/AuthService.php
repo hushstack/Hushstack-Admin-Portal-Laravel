@@ -32,9 +32,14 @@ class AuthService
     public function validateCredentials(string $email, string $password): ?User
     {
         $user = User::where('email', $email)->first();
-        if (!$user) return null;
+        if (! $user) {
+            return null;
+        }
 
-        if (!Hash::check($password, $user->password)) return null;
+        if (! Hash::check($password, $user->password)) {
+            return null;
+        }
+
         return $user;
     }
 
@@ -45,7 +50,7 @@ class AuthService
 
     public function changePassword(User $user, string $currentPassword, string $newPassword): bool
     {
-        if (!Hash::check($currentPassword, $user->password)) {
+        if (! Hash::check($currentPassword, $user->password)) {
             return false;
         }
 

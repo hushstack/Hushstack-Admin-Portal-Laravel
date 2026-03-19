@@ -12,7 +12,7 @@ class EnsureAdminRole
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
-        if (!$user || $user->role?->slug !== Role::ADMIN_SLUG) {
+        if (! $user || $user->role?->slug !== Role::ADMIN_SLUG) {
             return response()->json([
                 'status_code' => 403,
                 'status' => 'error',

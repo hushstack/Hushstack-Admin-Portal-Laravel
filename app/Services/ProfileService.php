@@ -3,14 +3,11 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Services\UploadService;
 use Illuminate\Validation\ValidationException;
 
 class ProfileService
 {
-    public function __construct(private readonly UploadService $uploadService)
-    {
-    }
+    public function __construct(private readonly UploadService $uploadService) {}
 
     public function updatePersonalInformation(User $user, array $data): User
     {
@@ -84,6 +81,7 @@ class ProfileService
 
         return $user->refresh();
     }
+
     /**
      * Get data for profile header section.
      */
@@ -125,7 +123,7 @@ class ProfileService
         }
 
         // Upload picture
-        if (!empty($data['picture'])) {
+        if (! empty($data['picture'])) {
             $user->picture = $this->uploadService->uploadAndReplace(
                 $data['picture'],
                 $user->picture,
@@ -134,7 +132,7 @@ class ProfileService
         }
 
         // Upload cover
-        if (!empty($data['cover'])) {
+        if (! empty($data['cover'])) {
             $user->cover = $this->uploadService->uploadAndReplace(
                 $data['cover'],
                 $user->cover,

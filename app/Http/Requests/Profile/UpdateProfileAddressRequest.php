@@ -14,11 +14,11 @@ class UpdateProfileAddressRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'country'     => ['sometimes', 'nullable', 'string', 'max:255'],
-            'city_state'  => ['sometimes', 'nullable', 'string', 'max:255'],
+            'country' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'city_state' => ['sometimes', 'nullable', 'string', 'max:255'],
             'postal_code' => ['sometimes', 'nullable', 'string', 'max:50'],
-            'tax_id'      => ['sometimes', 'nullable', 'string', 'max:100'],
-            'address'     => ['sometimes', 'nullable', 'string', 'max:500'],
+            'tax_id' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'address' => ['sometimes', 'nullable', 'string', 'max:500'],
         ];
     }
 }

@@ -1,20 +1,20 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\AccountController;
+use App\Http\Controllers\Api\Admin\UserActivityController;
+use App\Http\Controllers\Api\Admin\UserAdminController;
+use App\Http\Controllers\Api\Admin\UserRequestController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BrandController;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\DepartmentController;
+use App\Http\Controllers\Api\GoogleAuthController;
+use App\Http\Controllers\Api\MemberRequestController;
+use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserRoleController;
-use App\Http\Controllers\Api\Admin\UserAdminController;
-use App\Http\Controllers\Api\Admin\UserRequestController;
-use App\Http\Controllers\Api\Admin\UserActivityController;
-use App\Http\Controllers\Api\MemberRequestController;
-use App\Http\Controllers\Api\DepartmentController;
-use App\Http\Controllers\Api\CategoryController;
-use App\Http\Controllers\Api\BrandController;
-use App\Http\Controllers\Api\ProductController;
+use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -42,13 +42,13 @@ Route::post('/contact', [\App\Http\Controllers\Api\ContactController::class, 'se
 Route::post('/member/request', [MemberRequestController::class, 'store']);
 
 Route::middleware('auth:sanctum')->prefix('profile')->group(function () {
-    Route::get('header',        [ProfileController::class, 'header']);
+    Route::get('header', [ProfileController::class, 'header']);
     Route::get('personal-info', [ProfileController::class, 'personalInfo']);
-    Route::get('address',       [ProfileController::class, 'address']);
-    Route::post('header',        [ProfileController::class, 'updateHeader']);
-    Route::post('personal-info',[ProfileController::class, 'updatePersonalInfo']);
-//    Route::patch('header',      [ProfileController::class, 'updateHeader']);
-    Route::post('address',      [ProfileController::class, 'updateAddress']);
+    Route::get('address', [ProfileController::class, 'address']);
+    Route::post('header', [ProfileController::class, 'updateHeader']);
+    Route::post('personal-info', [ProfileController::class, 'updatePersonalInfo']);
+    //    Route::patch('header',      [ProfileController::class, 'updateHeader']);
+    Route::post('address', [ProfileController::class, 'updateAddress']);
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {

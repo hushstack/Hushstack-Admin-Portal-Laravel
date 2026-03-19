@@ -10,8 +10,11 @@ class Role extends Model
     use HasFactory;
 
     public const DEFAULT_SLUG = 'user';
+
     public const ADMIN_SLUG = 'admin';
+
     public const PARTNER_SLUG = 'partner';
+
     public const USER_SLUG = 'user';
 
     protected $fillable = [

@@ -17,9 +17,7 @@ class ProductController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __construct(private readonly UploadService $uploadService)
-    {
-    }
+    public function __construct(private readonly UploadService $uploadService) {}
 
     public function index(Request $request)
     {
@@ -39,7 +37,7 @@ class ProductController extends Controller
                 $query->whereHas('category', fn ($q) => $q->where('department_id', $departmentId));
             })
             ->when($brandId, fn ($query) => $query->where('brand_id', $brandId))
-            ->when(!is_null($isStock), fn ($query) => $query->where('is_stock', $isStock))
+            ->when(! is_null($isStock), fn ($query) => $query->where('is_stock', $isStock))
             ->orderBy('name')
             ->paginate($perPage);
 
@@ -98,7 +96,7 @@ class ProductController extends Controller
 
         $data = $request->validated();
 
-        if (!array_key_exists('slug', $data) && array_key_exists('name', $data)) {
+        if (! array_key_exists('slug', $data) && array_key_exists('name', $data)) {
             $data['slug'] = Str::slug($data['name']);
         }
 

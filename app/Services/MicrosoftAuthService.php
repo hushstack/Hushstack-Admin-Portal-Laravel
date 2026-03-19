@@ -54,12 +54,12 @@ class MicrosoftAuthService
                 ->where('provider_id', $providerId)
                 ->first();
 
-            if (!$user && $email) {
+            if (! $user && $email) {
                 $user = User::where('email', $email)->first();
             }
 
-            if (!$user) {
-                if (!$email) {
+            if (! $user) {
+                if (! $email) {
                     return [
                         'success' => false,
                         'status' => 422,
@@ -120,7 +120,7 @@ class MicrosoftAuthService
 
     private function validateRedirectTo(?string $redirectTo): ?string
     {
-        if (!$redirectTo) {
+        if (! $redirectTo) {
             return null;
         }
 
@@ -149,19 +149,19 @@ class MicrosoftAuthService
         $payload = rtrim(strtr(base64_encode($json ?: '{}'), '+/', '-_'), '=');
         $signature = hash_hmac('sha256', $payload, $this->stateSigningKey());
 
-        return $payload . '.' . $signature;
+        return $payload.'.'.$signature;
     }
 
     private function decodeState(?string $state): array
     {
-        if (!$state || !str_contains($state, '.')) {
+        if (! $state || ! str_contains($state, '.')) {
             return [];
         }
 
         [$payload, $signature] = explode('.', $state, 2);
         $expected = hash_hmac('sha256', $payload, $this->stateSigningKey());
 
-        if (!hash_equals($expected, $signature)) {
+        if (! hash_equals($expected, $signature)) {
             return [];
         }
 
@@ -171,7 +171,7 @@ class MicrosoftAuthService
         }
 
         $data = json_decode($decoded, true);
-        if (!is_array($data)) {
+        if (! is_array($data)) {
             return [];
         }
 
@@ -206,6 +206,6 @@ class MicrosoftAuthService
     {
         $base = Str::before($email, '@');
 
-        return $base . '_' . Str::lower(Str::random(4));
+        return $base.'_'.Str::lower(Str::random(4));
     }
 }

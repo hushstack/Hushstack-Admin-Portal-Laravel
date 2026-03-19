@@ -19,7 +19,7 @@ class AccountDeletionService
             ['execute_at' => $executeAt]
         );
 
-        Mail::to($user->email)->queue(new AccountDeleteWarningMail());
+        Mail::to($user->email)->queue(new AccountDeleteWarningMail);
 
         DeleteAccountJob::dispatch($user->id)->delay($executeAt);
     }

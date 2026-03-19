@@ -13,22 +13,22 @@ trait ApiResponseTrait
     ): JsonResponse {
         return response()->json([
             'status_code' => $statusCode,
-            'status'      => 'ok',
-            'message'     => $message,
-            'data'        => $data,
+            'status' => 'ok',
+            'message' => $message,
+            'data' => $data,
         ], $statusCode);
     }
 
     protected function errorResponse(
         string $message = 'Error',
         int $statusCode = 400,
-               $errors = null
+        $errors = null
     ): JsonResponse {
         return response()->json([
             'status_code' => $statusCode,
-            'status'      => 'error',
-            'message'     => $message,
-            'errors'      => $errors,
+            'status' => 'error',
+            'message' => $message,
+            'errors' => $errors,
         ], $statusCode);
     }
 }

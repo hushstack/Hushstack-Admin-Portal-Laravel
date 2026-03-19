@@ -18,16 +18,16 @@ class ProfileHeaderResource extends JsonResource
         ]);
 
         return [
-            'id'        => $this->id,
-            'bio'       => $this->bio,
-            'location'  => $locationParts ? implode(', ', $locationParts) : null,
-            'picture'   => $this->picture,
-            'cover'     => $this->cover,
+            'id' => $this->id,
+            'bio' => $this->bio,
+            'location' => $locationParts ? implode(', ', $locationParts) : null,
+            'picture' => $this->picture,
+            'cover' => $this->cover,
             'social_links' => [
                 'facebook' => $this->facebook_url,
-                'x'        => $this->x_url,
+                'x' => $this->x_url,
                 'linkedin' => $this->linkedin_url,
-                'instagram'=> $this->instagram_url,
+                'instagram' => $this->instagram_url,
             ],
         ];
     }

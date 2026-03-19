@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Brand;
 use App\Models\Category;
-use App\Models\Department;
 use App\Models\Product;
 use App\Models\Role;
 use App\Models\User;
@@ -17,7 +16,9 @@ class CatalogApiTest extends TestCase
     use RefreshDatabase;
 
     protected Role $adminRole;
+
     protected Role $partnerRole;
+
     protected Role $userRole;
 
     protected function setUp(): void

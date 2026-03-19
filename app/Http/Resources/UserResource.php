@@ -41,9 +41,9 @@ class UserResource extends JsonResource
                     'slug' => $this->role->slug,
                 ];
             }),
-            'email_verified_at' => optional($this->email_verified_at)->toISOString(),
-            'created_at' => optional($this->created_at)->toISOString(),
-            'updated_at' => optional($this->updated_at)->toISOString(),
+            'email_verified_at' => optional($this->email_verified_at)->format('M d Y'),
+            'created_at' => optional($this->created_at)->format('M d Y'),
+            'updated_at' => optional($this->updated_at)->format('M d Y'),
         ];
     }
 }

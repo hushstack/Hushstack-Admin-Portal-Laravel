@@ -13,18 +13,18 @@ class UserActivityResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'         => $this->id,
-            'user_id'    => $this->user_id,
+            'id' => $this->id,
+            'user_id' => $this->user_id,
             'first_name' => $this->user?->first_name,
-            'last_name'  => $this->user?->last_name,
-            'username'   => $this->user?->username,
-            'email'      => $this->user?->email,
-            'picture'    => $this->user?->picture,
-            'role_id'    => $this->role_id,
-            'role'       => $this->role?->name,
-            'activity'   => $this->activity,
+            'last_name' => $this->user?->last_name,
+            'username' => $this->user?->username,
+            'email' => $this->user?->email,
+            'picture' => $this->user?->picture,
+            'role_id' => $this->role_id,
+            'role' => $this->role?->name,
+            'activity' => $this->activity,
             'ip_address' => $this->ip_address,
-            'created_at' => optional($this->created_at)->toDateTimeString(),
+            'created_at' => optional($this->created_at)->format('M d Y'),
         ];
     }
 }

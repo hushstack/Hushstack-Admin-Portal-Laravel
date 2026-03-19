@@ -3,14 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\{
-    RegisterRequest,
-    LoginRequest,
-    VerifyOtpRequest,
-    ForgotPasswordRequest,
-    ResetPasswordRequest,
-    ChangePasswordRequest
-};
+use App\Http\Requests\ChangePasswordRequest;
+use App\Http\Requests\ForgotPasswordRequest;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\ResetPasswordRequest;
+use App\Http\Requests\VerifyOtpRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\AuthService;
@@ -44,7 +42,7 @@ class AuthController extends Controller
         $data = $request->validated();
 
         $user = User::where('email', $data['email'])->first();
-        if (!$user) {
+        if (! $user) {
             return response()->json(['success' => false, 'message' => 'User not found'], 404);
         }
 
@@ -55,7 +53,7 @@ class AuthController extends Controller
             ]);
         }
 
-        if (!$this->otp->verify($user, $data['otp'])) {
+        if (! $this->otp->verify($user, $data['otp'])) {
             return response()->json(['success' => false, 'message' => 'Invalid or expired OTP'], 422);
         }
 
@@ -77,11 +75,11 @@ class AuthController extends Controller
         $data = $request->validated();
 
         $user = $this->auth->validateCredentials($data['email'], $data['password']);
-        if (!$user) {
+        if (! $user) {
             return response()->json(['success' => false, 'message' => 'Invalid credentials'], 401);
         }
 
-        if (!$user->is_verified) {
+        if (! $user->is_verified) {
             $this->otp->send($user, 10);
 
             return response()->json([
@@ -110,7 +108,7 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         // don’t reveal existence
-        if (!$user) {
+        if (! $user) {
             return response()->json(['success' => true, 'message' => 'If email exists, OTP resent.']);
         }
 
@@ -153,11 +151,11 @@ class AuthController extends Controller
         $data = $request->validated();
 
         $user = User::where('email', $data['email'])->first();
-        if (!$user) {
+        if (! $user) {
             return response()->json(['success' => false, 'message' => 'User not found'], 404);
         }
 
-        if (!$this->otp->verify($user, $data['otp'])) {
+        if (! $this->otp->verify($user, $data['otp'])) {
             return response()->json(['success' => false, 'message' => 'Invalid or expired OTP'], 422);
         }
 
@@ -181,7 +179,7 @@ class AuthController extends Controller
         $user = $request->user();
 
         $ok = $this->auth->changePassword($user, $data['current_password'], $data['new_password']);
-        if (!$ok) {
+        if (! $ok) {
             return response()->json(['success' => false, 'message' => 'Current password incorrect'], 422);
         }
 

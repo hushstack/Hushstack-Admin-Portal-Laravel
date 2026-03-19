@@ -15,17 +15,17 @@ class UpdateProfileHeaderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'bio'           => ['nullable', 'string', 'max:255'],
+            'bio' => ['nullable', 'string', 'max:255'],
 
             // Social links
-            'facebook_url'  => ['nullable', 'url', 'max:255'],
-            'x_url'         => ['nullable', 'url', 'max:255'],
-            'linkedin_url'  => ['nullable', 'url', 'max:255'],
+            'facebook_url' => ['nullable', 'url', 'max:255'],
+            'x_url' => ['nullable', 'url', 'max:255'],
+            'linkedin_url' => ['nullable', 'url', 'max:255'],
             'instagram_url' => ['nullable', 'url', 'max:255'],
 
             // Images
-            'picture'       => ['sometimes', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'], // 5MB
-            'cover'         => ['sometimes', 'image', 'mimes:jpg,jpeg,png,webp', 'max:8192'], // 8MB
+            'picture' => ['sometimes', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'], // 5MB
+            'cover' => ['sometimes', 'image', 'mimes:jpg,jpeg,png,webp', 'max:8192'], // 8MB
         ];
     }
 }

@@ -15,7 +15,7 @@ class UserRequestResource extends JsonResource
             'message' => $this->message,
             'type_req' => $this->type_req,
             'telegram_number' => $this->telegram_number,
-            'submitted_at' => optional($this->submitted_at)->format('d M Y'),
+            'submitted_at' => optional($this->submitted_at)->format('M d Y'),
         ];
     }
 }

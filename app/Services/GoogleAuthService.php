@@ -55,12 +55,12 @@ class GoogleAuthService
                 ->where('provider_id', $providerId)
                 ->first();
 
-            if (!$user && $email && $emailVerified) {
+            if (! $user && $email && $emailVerified) {
                 $user = User::where('email', $email)->first();
             }
 
-            if (!$user) {
-                if (!$email || !$emailVerified) {
+            if (! $user) {
+                if (! $email || ! $emailVerified) {
                     return [
                         'success' => false,
                         'status' => 422,
@@ -80,7 +80,7 @@ class GoogleAuthService
                     'last_name' => $last,
                     'username' => $this->makeUsername($email),
                     'email' => $email,
-                    'social_login_key' => 'google_' . Str::lower(Str::random(10)),
+                    'social_login_key' => 'google_'.Str::lower(Str::random(10)),
                     'password' => Hash::make(Str::random(32)),
                     'is_verified' => true,
                     'email_verified_at' => now(),
@@ -123,7 +123,7 @@ class GoogleAuthService
 
     private function validateRedirectTo(?string $redirectTo): ?string
     {
-        if (!$redirectTo) {
+        if (! $redirectTo) {
             return null;
         }
 
@@ -152,19 +152,19 @@ class GoogleAuthService
         $payload = rtrim(strtr(base64_encode($json ?: '{}'), '+/', '-_'), '=');
         $signature = hash_hmac('sha256', $payload, $this->stateSigningKey());
 
-        return $payload . '.' . $signature;
+        return $payload.'.'.$signature;
     }
 
     private function decodeState(?string $state): array
     {
-        if (!$state || !str_contains($state, '.')) {
+        if (! $state || ! str_contains($state, '.')) {
             return [];
         }
 
         [$payload, $signature] = explode('.', $state, 2);
         $expected = hash_hmac('sha256', $payload, $this->stateSigningKey());
 
-        if (!hash_equals($expected, $signature)) {
+        if (! hash_equals($expected, $signature)) {
             return [];
         }
 
@@ -174,7 +174,7 @@ class GoogleAuthService
         }
 
         $data = json_decode($decoded, true);
-        if (!is_array($data)) {
+        if (! is_array($data)) {
             return [];
         }
 
@@ -208,6 +208,6 @@ class GoogleAuthService
     {
         $base = Str::before($email, '@');
 
-        return $base . '_' . Str::lower(Str::random(4));
+        return $base.'_'.Str::lower(Str::random(4));
     }
 }

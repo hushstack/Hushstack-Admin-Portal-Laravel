@@ -2,12 +2,12 @@
 
 namespace Tests\Unit;
 
-use Tests\TestCase;
-use App\Models\User;
 use App\Models\Role;
+use App\Models\User;
 use App\Models\UserActivity;
 use App\Services\ActivityLogger;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class ActivityLoggerTest extends TestCase
 {
@@ -18,17 +18,17 @@ class ActivityLoggerTest extends TestCase
         // Setup: Create a role and a user
         $role = Role::firstOrCreate(['id' => 1], [
             'name' => 'User',
-            'slug' => 'user'
+            'slug' => 'user',
         ]);
 
         $user = User::factory()->create([
             'role_id' => $role->id,
             'first_name' => 'John',
             'last_name' => 'Doe',
-            'picture' => 'profile.jpg'
+            'picture' => 'profile.jpg',
         ]);
 
-        $logger = new ActivityLogger();
+        $logger = new ActivityLogger;
         $logger->log($user, 'Test activity', '127.0.0.1');
 
         $this->assertDatabaseHas('user_activities', [
@@ -45,7 +45,7 @@ class ActivityLoggerTest extends TestCase
 
     public function test_activity_is_logged_without_user(): void
     {
-        $logger = new ActivityLogger();
+        $logger = new ActivityLogger;
         $logger->log(null, 'Guest activity', '127.0.0.1');
 
         $this->assertDatabaseHas('user_activities', [

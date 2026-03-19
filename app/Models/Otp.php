@@ -12,7 +12,7 @@ class Otp extends Model
         'expires_at',
         'used_at',
         'attempts',
-        'last_sent_at'
+        'last_sent_at',
     ];
 
     protected $casts = [

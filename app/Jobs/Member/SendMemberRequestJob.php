@@ -19,9 +19,7 @@ class SendMemberRequestJob implements ShouldQueue
 
     public int $tries = 3;
 
-    public function __construct(public array $payload)
-    {
-    }
+    public function __construct(public array $payload) {}
 
     public function handle(): void
     {
@@ -39,17 +37,17 @@ class SendMemberRequestJob implements ShouldQueue
 
     private function sendTelegram(array $payload): void
     {
-        $token  = config('services.telegram.bot_token');
+        $token = config('services.telegram.bot_token');
         $chatId = config('services.telegram.chat_id');
 
-        if (!$token || !$chatId) {
+        if (! $token || ! $chatId) {
             return;
         }
 
         $threadId = (int) config('contact.member_telegram_thread_id', 99);
         $dateOnly = now()->format('d M Y, h:i A');
 
-        $name  = $this->escapeTelegram($payload['name'] ?? '-');
+        $name = $this->escapeTelegram($payload['name'] ?? '-');
         $email = $this->escapeTelegram($payload['email'] ?? '-');
         $telegram = $this->escapeTelegram($payload['telegram_number'] ?? '-');
 
@@ -58,14 +56,14 @@ class SendMemberRequestJob implements ShouldQueue
 
         $text =
             "🧑‍🤝‍🧑 *New Member Request*\n"
-            . "━━━━━━━━━━━━━━━━━━\n"
-            . "*From:* {$name}\n"
-            . "*Email:* {$email}\n"
-            . "*Telegram:* {$telegram}\n"
-            . "*Date:* {$this->escapeTelegram($dateOnly)}\n"
-            . "━━━━━━━━━━━━━━━━━━\n"
-            . "*Message*\n"
-            . "{$message}\n";
+            ."━━━━━━━━━━━━━━━━━━\n"
+            ."*From:* {$name}\n"
+            ."*Email:* {$email}\n"
+            ."*Telegram:* {$telegram}\n"
+            ."*Date:* {$this->escapeTelegram($dateOnly)}\n"
+            ."━━━━━━━━━━━━━━━━━━\n"
+            ."*Message*\n"
+            ."{$message}\n";
 
         Http::timeout(15)->post("https://api.telegram.org/bot{$token}/sendMessage", [
             'chat_id' => $chatId,
@@ -80,8 +78,9 @@ class SendMemberRequestJob implements ShouldQueue
     {
         $escapeChars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'];
         foreach ($escapeChars as $char) {
-            $text = str_replace($char, '\\' . $char, $text);
+            $text = str_replace($char, '\\'.$char, $text);
         }
+
         return $text;
     }
 

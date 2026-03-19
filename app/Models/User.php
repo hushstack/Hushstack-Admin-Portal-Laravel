@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use App\Models\Nationality;
 
 class User extends Authenticatable
 {
@@ -49,12 +48,12 @@ class User extends Authenticatable
     protected $hidden = ['password', 'remember_token'];
 
     protected $casts = [
-        'is_verified'          => 'boolean',
-        'email_verified_at'    => 'datetime',
-        'birth_of_date'        => 'date',
-        'login_otp_verified_at'=> 'datetime',
-        'role_id'              => 'integer',
-        'username_changed_at'   => 'datetime'
+        'is_verified' => 'boolean',
+        'email_verified_at' => 'datetime',
+        'birth_of_date' => 'date',
+        'login_otp_verified_at' => 'datetime',
+        'role_id' => 'integer',
+        'username_changed_at' => 'datetime',
     ];
 
     public function role()

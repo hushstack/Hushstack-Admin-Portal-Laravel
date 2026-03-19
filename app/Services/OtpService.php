@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Mail;
 class OtpService
 {
     public int $maxAttempts = 5;
+
     public int $resendCooldownSeconds = 60;
 
     public function send(User $user, int $minutes = 10): void
@@ -59,6 +60,7 @@ class OtpService
         }
 
         $this->send($user, $minutes);
+
         return true;
     }
 
@@ -72,17 +74,24 @@ class OtpService
                 ->lockForUpdate()
                 ->first();
 
-            if (!$otp) return false;
-            if (now()->gte($otp->expires_at)) return false;
-            if ($otp->attempts >= $this->maxAttempts) return false;
+            if (! $otp) {
+                return false;
+            }
+            if (now()->gte($otp->expires_at)) {
+                return false;
+            }
+            if ($otp->attempts >= $this->maxAttempts) {
+                return false;
+            }
 
             $otp->increment('attempts');
 
-            if (!Hash::check($code, $otp->code_hash)) {
+            if (! Hash::check($code, $otp->code_hash)) {
                 return false;
             }
 
             $otp->update(['used_at' => now()]);
+
             return true;
         });
     }

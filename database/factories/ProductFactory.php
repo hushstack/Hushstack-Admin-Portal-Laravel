@@ -21,8 +21,8 @@ class ProductFactory extends Factory
 
         return [
             'name' => $name,
-            'slug' => Str::slug($name) . '-' . fake()->unique()->numberBetween(100, 999),
-            'sku' => 'SKU-' . fake()->unique()->numerify('########'),
+            'slug' => Str::slug($name).'-'.fake()->unique()->numberBetween(100, 999),
+            'sku' => 'SKU-'.fake()->unique()->numerify('########'),
             'short_description' => fake()->sentence(8),
             'description' => fake()->paragraph(),
             'image' => fake()->imageUrl(640, 480, 'product', true),

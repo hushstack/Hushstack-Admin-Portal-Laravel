@@ -21,13 +21,18 @@ class DeleteAccountJob implements ShouldQueue
     public function handle(): void
     {
         $deletion = AccountDeletion::where('user_id', $this->userId)->first();
-        if (!$deletion) return;
+        if (! $deletion) {
+            return;
+        }
 
-        if (now()->lt($deletion->execute_at)) return;
+        if (now()->lt($deletion->execute_at)) {
+            return;
+        }
 
         $user = User::find($this->userId);
-        if (!$user) {
+        if (! $user) {
             $deletion->delete();
+
             return;
         }
 
@@ -38,6 +43,6 @@ class DeleteAccountJob implements ShouldQueue
 
         $deletion->delete();
 
-        Mail::to($email)->queue(new AccountDeletedSuccessMail());
+        Mail::to($email)->queue(new AccountDeletedSuccessMail);
     }
 }

@@ -18,6 +18,7 @@ class UserListResource extends JsonResource
             'role_id' => $this->role_id,
             'role' => $this->whenLoaded('role', function () {
                 $role = $this->role;
+
                 return $role ? [
                     'id' => $role->id,
                     'name' => $role->name,

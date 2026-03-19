@@ -13,7 +13,7 @@ class EnsureAdminOrPartnerRole
     {
         $roleSlug = $request->user()?->role?->slug;
 
-        if (!in_array($roleSlug, [Role::ADMIN_SLUG, Role::PARTNER_SLUG], true)) {
+        if (! in_array($roleSlug, [Role::ADMIN_SLUG, Role::PARTNER_SLUG], true)) {
             return response()->json([
                 'status_code' => 403,
                 'status' => 'error',

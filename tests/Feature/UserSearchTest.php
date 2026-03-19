@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\User;
 use App\Models\Role;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class UserSearchTest extends TestCase
 {
@@ -20,7 +20,7 @@ class UserSearchTest extends TestCase
         // Create an admin user
         $admin = User::factory()->create([
             'role_id' => $adminRole->id,
-            'email' => 'admin@example.com'
+            'email' => 'admin@example.com',
         ]);
 
         // Create a target user to search for
@@ -28,7 +28,7 @@ class UserSearchTest extends TestCase
             'role_id' => $userRole->id,
             'first_name' => 'Peter',
             'last_name' => 'Parker',
-            'email' => 'peter@example.com'
+            'email' => 'peter@example.com',
         ]);
 
         // Authenticate as admin
@@ -47,10 +47,10 @@ class UserSearchTest extends TestCase
                             'first_name',
                             'last_name',
                             'email',
-                            'role'
-                        ]
-                    ]
-                ]
+                            'role',
+                        ],
+                    ],
+                ],
             ]);
     }
 

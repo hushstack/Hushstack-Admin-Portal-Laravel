@@ -16,9 +16,7 @@ class UserAdminController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __construct(private ActivityLogger $activityLogger)
-    {
-    }
+    public function __construct(private ActivityLogger $activityLogger) {}
 
     public function index(IndexUserRequest $request)
     {
@@ -35,7 +33,7 @@ class UserAdminController extends Controller
         try {
             $this->activityLogger->log($request->user(), 'Viewed user list', $request->ip());
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error("Activity logging failed: " . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Activity logging failed: '.$e->getMessage());
         }
 
         return $this->successResponse([
@@ -67,7 +65,7 @@ class UserAdminController extends Controller
         try {
             $this->activityLogger->log($request->user(), "Searched users term: {$term}", $request->ip());
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error("Activity logging failed: " . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Activity logging failed: '.$e->getMessage());
         }
 
         return $this->successResponse([

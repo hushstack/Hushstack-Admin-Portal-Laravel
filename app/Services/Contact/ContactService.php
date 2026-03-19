@@ -13,7 +13,7 @@ class ContactService
         $submittedAt = now();
         $payload['submitted_at'] = $submittedAt->toDateTimeString();
         $payload['app_name'] = config('app.name');
-        $payload['app_url']  = config('app.url');
+        $payload['app_url'] = config('app.url');
 
         UserRequest::create([
             'name' => $payload['name'],

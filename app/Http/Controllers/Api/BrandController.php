@@ -17,9 +17,7 @@ class BrandController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __construct(private readonly UploadService $uploadService)
-    {
-    }
+    public function __construct(private readonly UploadService $uploadService) {}
 
     public function index(Request $request)
     {
@@ -84,7 +82,7 @@ class BrandController extends Controller
 
         $data = $request->validated();
 
-        if (!array_key_exists('slug', $data) && array_key_exists('name', $data)) {
+        if (! array_key_exists('slug', $data) && array_key_exists('name', $data)) {
             $data['slug'] = Str::slug($data['name']);
         }
 

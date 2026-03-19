@@ -14,9 +14,7 @@ class UserRoleController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __construct(private ActivityLogger $activityLogger)
-    {
-    }
+    public function __construct(private ActivityLogger $activityLogger) {}
 
     public function assign(AssignRoleRequest $request, User $user)
     {

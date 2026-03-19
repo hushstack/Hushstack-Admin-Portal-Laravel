@@ -32,7 +32,8 @@ class DepartmentResource extends JsonResource
 
     private function userDisplayName(): string
     {
-        $name = trim(($this->user->first_name ?? '') . ' ' . ($this->user->last_name ?? ''));
+        $name = trim(($this->user->first_name ?? '').' '.($this->user->last_name ?? ''));
+
         return $name !== '' ? $name : ($this->user->username ?? $this->user->email ?? 'User');
     }
 }

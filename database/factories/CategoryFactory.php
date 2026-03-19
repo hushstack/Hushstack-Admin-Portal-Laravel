@@ -20,7 +20,7 @@ class CategoryFactory extends Factory
 
         return [
             'name' => ucfirst($name),
-            'slug' => Str::slug($name) . '-' . fake()->unique()->numberBetween(100, 999),
+            'slug' => Str::slug($name).'-'.fake()->unique()->numberBetween(100, 999),
             'image' => fake()->imageUrl(640, 480, 'category', true),
             'department_id' => Department::factory(),
         ];

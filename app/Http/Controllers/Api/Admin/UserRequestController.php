@@ -8,15 +8,12 @@ use App\Http\Resources\Admin\UserRequestResource;
 use App\Models\UserRequest;
 use App\Services\ActivityLogger;
 use App\Traits\ApiResponseTrait;
-use Illuminate\Http\Request;
 
 class UserRequestController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __construct(private ActivityLogger $activityLogger)
-    {
-    }
+    public function __construct(private ActivityLogger $activityLogger) {}
 
     public function index(IndexUserRequest $request)
     {

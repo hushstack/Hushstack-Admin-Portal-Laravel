@@ -10,9 +10,7 @@ class UserMemberRequestConfirmationMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public array $payload)
-    {
-    }
+    public function __construct(public array $payload) {}
 
     public function build()
     {

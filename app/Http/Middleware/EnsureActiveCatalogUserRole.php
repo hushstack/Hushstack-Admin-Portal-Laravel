@@ -13,7 +13,7 @@ class EnsureActiveCatalogUserRole
     {
         $slug = $request->user()?->role?->slug;
 
-        if (!in_array($slug, [Role::ADMIN_SLUG, Role::PARTNER_SLUG, Role::USER_SLUG], true)) {
+        if (! in_array($slug, [Role::ADMIN_SLUG, Role::PARTNER_SLUG, Role::USER_SLUG], true)) {
             return response()->json([
                 'status_code' => 403,
                 'status' => 'error',

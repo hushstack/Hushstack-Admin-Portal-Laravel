@@ -23,7 +23,7 @@ class UserDetailResource extends JsonResource
             'contact_url' => $this->contact_url,
             'address' => $this->address,
             'provider' => $this->provider,
-            'created_at' => optional($this->created_at)->format('d M Y'),
+            'created_at' => optional($this->created_at)->format('M d Y'),
             'facebook_url' => $this->facebook_url,
             'x_url' => $this->x_url,
             'linkedin_url' => $this->linkedin_url,
@@ -33,6 +33,7 @@ class UserDetailResource extends JsonResource
             'role_id' => $this->role_id,
             'role' => $this->whenLoaded('role', function () {
                 $role = $this->role;
+
                 return $role ? [
                     'id' => $role->id,
                     'name' => $role->name,
@@ -41,6 +42,7 @@ class UserDetailResource extends JsonResource
             }),
             'nationality' => $this->whenLoaded('nationality', function () {
                 $nationality = $this->nationality;
+
                 return $nationality ? [
                     'id' => $nationality->id,
                     'name' => $nationality->name ?? null,

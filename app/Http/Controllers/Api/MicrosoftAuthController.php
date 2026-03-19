@@ -25,7 +25,7 @@ class MicrosoftAuthController extends Controller
     {
         $result = $this->microsoft->handleCallback($request);
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return response()->json([
                 'success' => false,
                 'message' => $result['message'] ?? 'Microsoft login failed.',
@@ -45,13 +45,13 @@ class MicrosoftAuthController extends Controller
         $redirectTo = $result['redirect_to'] ?? null;
         $wantsJson = (bool) ($result['wants_json'] ?? false);
 
-        if ($redirectTo && !$wantsJson) {
+        if ($redirectTo && ! $wantsJson) {
             $query = http_build_query([
                 'token' => $payload['token'],
-                'user'  => json_encode($payload['user']),
+                'user' => json_encode($payload['user']),
             ]);
 
-            return redirect()->away($redirectTo . '?' . $query);
+            return redirect()->away($redirectTo.'?'.$query);
         }
 
         return response()->json([

@@ -14,8 +14,8 @@ class RoleResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
-            // 'created_at' => optional($this->created_at)->toISOString(),
-            // 'updated_at' => optional($this->updated_at)->toISOString(),
+            // 'created_at' => optional($this->created_at)->format('M d Y'),
+            // 'updated_at' => optional($this->updated_at)->format('M d Y'),
         ];
     }
 }

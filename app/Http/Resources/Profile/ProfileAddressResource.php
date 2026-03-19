@@ -13,11 +13,11 @@ class ProfileAddressResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'country'     => $this->country,
-            'city_state'  => $this->city_state,
+            'country' => $this->country,
+            'city_state' => $this->city_state,
             'postal_code' => $this->postal_code,
-            'tax_id'      => $this->tax_id,
-            'address'     => $this->address,
+            'tax_id' => $this->tax_id,
+            'address' => $this->address,
         ];
     }
 }

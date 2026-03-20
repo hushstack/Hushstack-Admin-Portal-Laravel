@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\AccountController;
+use App\Http\Controllers\Api\Admin\MemberController;
+use App\Http\Controllers\Api\Admin\PositionController;
 use App\Http\Controllers\Api\Admin\UserActivityController;
 use App\Http\Controllers\Api\Admin\UserAdminController;
 use App\Http\Controllers\Api\Admin\UserRequestController;
@@ -60,6 +62,8 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::delete('users/{user}', [UserAdminController::class, 'destroy']);
     Route::get('user-requests', [UserRequestController::class, 'index']);
     Route::get('user-activities', [UserActivityController::class, 'index']);
+    Route::apiResource('positions', PositionController::class);
+    Route::apiResource('members', MemberController::class);
 });
 
 Route::middleware(['auth:sanctum', 'active_catalog_user'])->prefix('admin')->group(function () {

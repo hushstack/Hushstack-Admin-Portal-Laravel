@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "hushstack-laravel": {
+      "command": "php",
+      "args": [
+        "D:/HushStuck_FreelanceTeam/Hushstack-Admin-Portal-Laravel/artisan",
+        "mcp:serve"
+      ],
+      "env": {
+        "APP_ENV": "local",
+        "APP_DEBUG": "true"
+      }
+    }
+  }
+}

@@ -12,7 +12,13 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Auto-clear Laravel logs older than 7 days (runs daily at midnight)
+        $schedule->command('logs:clear --days=7 --force')
+            ->daily()
+            ->at('00:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->appendOutputTo(storage_path('logs/scheduler.log'));
     }
 
     /**

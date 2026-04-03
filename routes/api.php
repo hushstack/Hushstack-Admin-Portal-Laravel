@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AccountController;
+use App\Http\Controllers\Api\Admin\LogController;
 use App\Http\Controllers\Api\Admin\MemberController;
 use App\Http\Controllers\Api\Admin\PositionController;
 use App\Http\Controllers\Api\Admin\ProjectController;
@@ -76,6 +77,12 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::delete('projects/{project}', [ProjectController::class, 'destroy']);
         Route::post('projects/{id}/restore', [ProjectController::class, 'restore']);
         Route::delete('projects/{id}/force', [ProjectController::class, 'forceDelete']);
+    });
+
+    // Laravel Log Viewer Routes - Admin Only
+    Route::middleware('throttle:30,1')->group(function () {
+        Route::get('logs', [LogController::class, 'index']);
+        Route::get('logs/files', [LogController::class, 'files']);
     });
 });
 

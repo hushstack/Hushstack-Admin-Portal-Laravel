@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\Admin\MemberController;
 use App\Http\Controllers\Api\Admin\PositionController;
+use App\Http\Controllers\Api\Admin\ProjectController;
 use App\Http\Controllers\Api\Admin\UserActivityController;
 use App\Http\Controllers\Api\Admin\UserAdminController;
 use App\Http\Controllers\Api\Admin\UserRequestController;
@@ -64,6 +65,18 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::get('user-activities', [UserActivityController::class, 'index']);
     Route::apiResource('positions', PositionController::class);
     Route::apiResource('members', MemberController::class);
+
+    // Project Routes with Rate Limiting
+    // POST for create and update to support file uploads (multipart/form-data)
+    Route::middleware('throttle:60,1')->group(function () {
+        Route::get('projects', [ProjectController::class, 'index']);
+        Route::post('projects', [ProjectController::class, 'store']);
+        Route::get('projects/{project}', [ProjectController::class, 'show']);
+        Route::post('projects/{project}', [ProjectController::class, 'update']);
+        Route::delete('projects/{project}', [ProjectController::class, 'destroy']);
+        Route::post('projects/{id}/restore', [ProjectController::class, 'restore']);
+        Route::delete('projects/{id}/force', [ProjectController::class, 'forceDelete']);
+    });
 });
 
 Route::middleware(['auth:sanctum', 'active_catalog_user'])->prefix('admin')->group(function () {

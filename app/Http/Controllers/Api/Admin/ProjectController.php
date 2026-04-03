@@ -74,6 +74,42 @@ class ProjectController extends Controller
     }
 
     /**
+     * Public endpoint: Display published projects only.
+     *
+     * Security: No auth required, only is_published=true projects visible
+     * OWASP A01:2021 - Broken Access Control: Data exposure limited to published only
+     * Performance: Uses caching-friendly query
+     */
+    public function publicIndex(Request $request): JsonResponse
+    {
+        try {
+            $perPage = $this->sanitizePerPage($request->input('per_page', 15));
+
+            // Only return published projects - enforced at query level
+            $projects = $this->projectService->getPaginated(
+                search: null,
+                published: true,
+                perPage: $perPage
+            );
+
+            return $this->successResponse(
+                ProjectResource::collection($projects),
+                'Published projects retrieved successfully.'
+            );
+        } catch (Throwable $e) {
+            Log::error('Error fetching public projects', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return $this->errorResponse(
+                'Failed to retrieve projects.',
+                500
+            );
+        }
+    }
+
+    /**
      * Store a newly created project.
      *
      * Security: POST method allows multipart/form-data for image upload

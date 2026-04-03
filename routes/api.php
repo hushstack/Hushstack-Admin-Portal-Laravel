@@ -99,3 +99,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('brands', BrandController::class)->only(['index', 'show']);
     Route::apiResource('products', ProductController::class)->only(['index', 'show']);
 });
+
+// Public Projects Endpoint - No auth required, rate limited
+// OWASP A01:2021 - Broken Access Control: Only published projects visible
+Route::middleware('throttle:60,1')->get('projects-public', [ProjectController::class, 'publicIndex']);

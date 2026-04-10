@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Permission;
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\Admin\LogController;
 use App\Http\Controllers\Api\Admin\MemberController;
@@ -14,9 +15,11 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\MemberRequestController;
+use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\RolePermissionController;
 use App\Http\Controllers\Api\UserRoleController;
 use Illuminate\Support\Facades\Route;
 
@@ -103,3 +106,42 @@ Route::middleware('auth:sanctum')->group(function () {
 // Public Projects Endpoint - No auth required, rate limited
 // OWASP A01:2021 - Broken Access Control: Only published projects visible
 Route::middleware('throttle:60,1')->get('projects-public', [ProjectController::class, 'publicIndex']);
+
+/**
+ * Permission Management Routes
+ *
+ * Security: Permission-based access control using hardcoded Permission enum
+ * Performance: Rate limited to prevent abuse
+ * OWASP: Compliant with A01 (Access Control), A03 (Injection), A07 (Logging)
+ *
+ * Note: Only Super Admin can manage permissions, but we check specific permission
+ * for future flexibility (e.g., delegated permission management)
+ */
+Route::middleware(['auth:sanctum', 'super_admin'])->prefix('admin')->group(function () {
+
+    // Permission Management with rate limiting
+    // Requires 'permissions.view' to list/show, 'permissions.assign' to modify
+    Route::middleware('throttle:60,1')->group(function () {
+
+        // List/Show permissions - requires permissions.view
+        Route::middleware('permission:' . Permission::PERMISSIONS_VIEW->value)->group(function () {
+            Route::get('permissions', [PermissionController::class, 'index']);
+            Route::get('permissions/{permission}', [PermissionController::class, 'show']);
+            Route::get('permissions/{permission}/roles', [RolePermissionController::class, 'rolesWithPermission']);
+        });
+
+        // Role-Permission Assignment - requires permissions.assign
+        Route::middleware('permission:' . Permission::PERMISSIONS_ASSIGN->value)->group(function () {
+            Route::get('roles/{role}/permissions', [RolePermissionController::class, 'index']);
+            Route::post('roles/{role}/permissions', [RolePermissionController::class, 'assign']);
+        });
+
+        // Revoke permissions - requires permissions.revoke
+        Route::middleware('permission:' . Permission::PERMISSIONS_REVOKE->value)->group(function () {
+            // Revoke specific permissions by ID in body
+            Route::delete('roles/{role}/permissions', [RolePermissionController::class, 'revoke']);
+            // Revoke all permissions from role
+            Route::delete('roles/{role}/permissions/all', [RolePermissionController::class, 'revokeAll']);
+        });
+    });
+});

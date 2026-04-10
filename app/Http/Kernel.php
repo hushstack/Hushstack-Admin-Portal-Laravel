@@ -57,6 +57,7 @@ class Kernel extends HttpKernel
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
         'admin' => \App\Http\Middleware\EnsureAdminRole::class,
+        'super_admin' => \App\Http\Middleware\EnsureSuperAdminRole::class,
         'admin_or_partner' => \App\Http\Middleware\EnsureAdminOrPartnerRole::class,
         'active_catalog_user' => \App\Http\Middleware\EnsureActiveCatalogUserRole::class,
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
@@ -67,5 +68,7 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+        'permission' => \App\Http\Middleware\CheckPermission::class,
+        'any_permission' => \App\Http\Middleware\CheckAnyPermission::class,
     ];
 }

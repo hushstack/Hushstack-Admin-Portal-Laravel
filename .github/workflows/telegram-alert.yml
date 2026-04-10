@@ -10,10 +10,23 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Get changed files
+        id: changed-files
+        if: github.event_name == 'push'
+        run: |
+          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+          git diff --name-status HEAD~1 HEAD >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Send Telegram alert
         env:
-          TELEGRAM_BOT_TOKEN: '7862482571:AAH-NV34GtzkBy07sgqCJSyga130cV5HDUY'
-          TELEGRAM_CHAT_ID: '-1003388054167'
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           TELEGRAM_THREAD_ID: '114'
           EVENT_NAME: ${{ github.event_name }}
           REPO: ${{ github.repository }}
@@ -25,13 +38,30 @@ jobs:
           PR_URL: ${{ github.event.pull_request.html_url }}
           CREATED_REF_TYPE: ${{ github.event.ref_type }}
           CREATED_REF: ${{ github.event.ref }}
+          CHANGED_FILES: ${{ steps.changed-files.outputs.changed_files }}
         run: |
+          MAX_LINES=30
+
           if [ "$EVENT_NAME" = "push" ]; then
-            TEXT="🚀 Push Alert%0ARepository: $REPO%0ABy: $ACTOR%0ABranch: $REF_NAME%0ACommit: $COMMIT_MESSAGE"
+            # Build file changes summary
+            if [ -n "$CHANGED_FILES" ]; then
+              CHANGES=$(echo "$CHANGED_FILES" | head -n $MAX_LINES)
+              FILE_COUNT=$(echo "$CHANGED_FILES" | wc -l)
+              if [ "$FILE_COUNT" -gt "$MAX_LINES" ]; then
+                CHANGES="${CHANGES}%0A... and $((FILE_COUNT - MAX_LINES)) more files"
+              fi
+            else
+              CHANGES="No files changed"
+            fi
+
+            TEXT="🚀 Push Alert%0ARepository: $REPO%0ABy: $ACTOR%0ABranch: $REF_NAME%0ACommit: $COMMIT_MESSAGE%0A%0A📁 Changed Files:%0A${CHANGES}"
+
           elif [ "$EVENT_NAME" = "create" ] && [ "$CREATED_REF_TYPE" = "branch" ]; then
             TEXT="🌱 New Branch Created%0ARepository: $REPO%0ABy: $ACTOR%0ABranch: $CREATED_REF"
+
           elif [ "$EVENT_NAME" = "pull_request" ] && [ "$PR_MERGED" = "true" ]; then
             TEXT="✅ Pull Request Merged%0ARepository: $REPO%0ABy: $ACTOR%0ATitle: $PR_TITLE%0AURL: $PR_URL"
+
           else
             echo "No message to send for this event."
             exit 0
@@ -41,9 +71,11 @@ jobs:
             curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
               -d "chat_id=${TELEGRAM_CHAT_ID}" \
               -d "message_thread_id=${TELEGRAM_THREAD_ID}" \
-              -d "text=${TEXT}"
+              -d "text=${TEXT}" \
+              -d "parse_mode=HTML"
           else
             curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
               -d "chat_id=${TELEGRAM_CHAT_ID}" \
-              -d "text=${TEXT}"
+              -d "text=${TEXT}" \
+              -d "parse_mode=HTML"
           fi

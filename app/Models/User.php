@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Permission;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -64,5 +65,99 @@ class User extends Authenticatable
     public function nationality()
     {
         return $this->belongsTo(Nationality::class);
+    }
+
+    /**
+     * Check if user has a specific permission (via their role).
+     *
+     * OOAD: Permission checking using enum for type safety
+     */
+    public function hasPermission(Permission $permission): bool
+    {
+        if ($this->role === null) {
+            return false;
+        }
+
+        // Super admin has all permissions
+        if ($this->role->isSuperAdmin()) {
+            return true;
+        }
+
+        return $this->role->hasPermission($permission->value);
+    }
+
+    /**
+     * Check if user has a specific permission by slug string.
+     * Falls back to enum check if slug exists.
+     */
+    public function hasPermissionSlug(string $slug): bool
+    {
+        // Check if it's a valid enum case
+        if (Permission::exists($slug)) {
+            return $this->hasPermission(Permission::fromSlug($slug));
+        }
+
+        // Fallback to database check for legacy or dynamic permissions
+        if ($this->role === null) {
+            return false;
+        }
+
+        return $this->role->hasPermission($slug);
+    }
+
+    /**
+     * Check if user has any of the given permissions.
+     *
+     * @param array<int, Permission> $permissions
+     */
+    public function hasAnyPermission(array $permissions): bool
+    {
+        foreach ($permissions as $permission) {
+            if ($this->hasPermission($permission)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if user has all of the given permissions.
+     *
+     * @param array<int, Permission> $permissions
+     */
+    public function hasAllPermissions(array $permissions): bool
+    {
+        foreach ($permissions as $permission) {
+            if (!$this->hasPermission($permission)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Check if user is Super Admin.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->role?->isSuperAdmin() ?? false;
+    }
+
+    /**
+     * Get all permissions for the user.
+     *
+     * @return array<int, string>
+     */
+    public function getPermissions(): array
+    {
+        if ($this->role === null) {
+            return [];
+        }
+
+        if ($this->role->isSuperAdmin()) {
+            return Permission::allSlugs();
+        }
+
+        return $this->role->permissions()->pluck('slug')->toArray();
     }
 }

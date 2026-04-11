@@ -21,6 +21,9 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\RolePermissionController;
 use App\Http\Controllers\Api\UserRoleController;
+use App\Http\Controllers\Api\VersionControl\BranchController;
+use App\Http\Controllers\Api\VersionControl\CollectionController;
+use App\Http\Controllers\Api\VersionControl\CommitController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function () {
@@ -144,4 +147,73 @@ Route::middleware(['auth:sanctum', 'super_admin'])->prefix('admin')->group(funct
             Route::delete('roles/{role}/permissions/all', [RolePermissionController::class, 'revokeAll']);
         });
     });
+});
+
+/**
+ * Version Control Routes (Collections, Branches, Commits)
+ *
+ * Security: Permission-based access control using hardcoded Permission enum
+ * Performance: Rate limited to prevent abuse
+ * OWASP: Compliant with A01 (Access Control), A03 (Injection), A05 (Config)
+ *
+ * Endpoints:
+ * 1. GET    /api/collections           - List all collections
+ * 2. GET    /api/branches              - List all branches (filter: stage)
+ * 3. GET    /api/commits               - List all commits (filter: branch_id, collection_id)
+ * 4. GET    /api/collections/{id}/branches - List branches by collection (filter: stage)
+ * 5. GET    /api/branches/{id}/commits - List commits by branch
+ * 6. GET    /api/collections/count     - Count collections, branches by stage, total commits
+ * 7. GET    /api/branches/count        - Count branches by stage and total commits by collection
+ */
+Route::middleware(['auth:sanctum'])->group(function () {
+
+    // Collections
+    Route::middleware('permission:' . Permission::COLLECTIONS_VIEW->value)->group(function () {
+        Route::get('collections', [CollectionController::class, 'index']);
+        Route::get('collections/count', [CollectionController::class, 'count']);
+        Route::get('collections/{id}', [CollectionController::class, 'show']);
+    });
+
+    Route::middleware('permission:' . Permission::COLLECTIONS_CREATE->value)
+        ->post('collections', [CollectionController::class, 'store']);
+
+    Route::middleware('permission:' . Permission::COLLECTIONS_EDIT->value)
+        ->put('collections/{id}', [CollectionController::class, 'update']);
+
+    Route::middleware('permission:' . Permission::COLLECTIONS_DELETE->value)
+        ->delete('collections/{id}', [CollectionController::class, 'destroy']);
+
+    // Branches
+    Route::middleware('permission:' . Permission::BRANCHES_VIEW->value)->group(function () {
+        Route::get('branches', [BranchController::class, 'index']);
+        Route::get('branches/count', [BranchController::class, 'count']);
+        Route::get('branches/{id}', [BranchController::class, 'show']);
+        Route::get('collections/{id}/branches', [BranchController::class, 'byCollection']);
+    });
+
+    Route::middleware('permission:' . Permission::BRANCHES_CREATE->value)
+        ->post('branches', [BranchController::class, 'store']);
+
+    Route::middleware('permission:' . Permission::BRANCHES_EDIT->value)
+        ->put('branches/{id}', [BranchController::class, 'update']);
+
+    Route::middleware('permission:' . Permission::BRANCHES_DELETE->value)
+        ->delete('branches/{id}', [BranchController::class, 'destroy']);
+
+    // Commits
+    Route::middleware('permission:' . Permission::COMMITS_VIEW->value)->group(function () {
+        Route::get('commits', [CommitController::class, 'index']);
+        Route::get('commits/count', [CommitController::class, 'count']);
+        Route::get('commits/{id}', [CommitController::class, 'show']);
+        Route::get('branches/{id}/commits', [CommitController::class, 'byBranch']);
+    });
+
+    Route::middleware('permission:' . Permission::COMMITS_CREATE->value)
+        ->post('commits', [CommitController::class, 'store']);
+
+    Route::middleware('permission:' . Permission::COMMITS_EDIT->value)
+        ->put('commits/{id}', [CommitController::class, 'update']);
+
+    Route::middleware('permission:' . Permission::COMMITS_DELETE->value)
+        ->delete('commits/{id}', [CommitController::class, 'destroy']);
 });

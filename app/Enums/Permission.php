@@ -88,6 +88,24 @@ enum Permission: string
     case SETTINGS_VIEW = 'settings.view';
     case SETTINGS_EDIT = 'settings.edit';
 
+    // Collection Management
+    case COLLECTIONS_VIEW = 'collections.view';
+    case COLLECTIONS_CREATE = 'collections.create';
+    case COLLECTIONS_EDIT = 'collections.edit';
+    case COLLECTIONS_DELETE = 'collections.delete';
+
+    // Branch Management
+    case BRANCHES_VIEW = 'branches.view';
+    case BRANCHES_CREATE = 'branches.create';
+    case BRANCHES_EDIT = 'branches.edit';
+    case BRANCHES_DELETE = 'branches.delete';
+
+    // Commit Management
+    case COMMITS_VIEW = 'commits.view';
+    case COMMITS_CREATE = 'commits.create';
+    case COMMITS_EDIT = 'commits.edit';
+    case COMMITS_DELETE = 'commits.delete';
+
     /**
      * Get human-readable name for permission.
      */
@@ -156,6 +174,21 @@ enum Permission: string
 
             self::SETTINGS_VIEW => 'View Settings',
             self::SETTINGS_EDIT => 'Edit Settings',
+
+            self::COLLECTIONS_VIEW => 'View Collections',
+            self::COLLECTIONS_CREATE => 'Create Collections',
+            self::COLLECTIONS_EDIT => 'Edit Collections',
+            self::COLLECTIONS_DELETE => 'Delete Collections',
+
+            self::BRANCHES_VIEW => 'View Branches',
+            self::BRANCHES_CREATE => 'Create Branches',
+            self::BRANCHES_EDIT => 'Edit Branches',
+            self::BRANCHES_DELETE => 'Delete Branches',
+
+            self::COMMITS_VIEW => 'View Commits',
+            self::COMMITS_CREATE => 'Create Commits',
+            self::COMMITS_EDIT => 'Edit Commits',
+            self::COMMITS_DELETE => 'Delete Commits',
         };
     }
 
@@ -227,6 +260,21 @@ enum Permission: string
 
             self::SETTINGS_VIEW => 'View system settings',
             self::SETTINGS_EDIT => 'Modify system settings',
+
+            self::COLLECTIONS_VIEW => 'View version control collections',
+            self::COLLECTIONS_CREATE => 'Create new collections',
+            self::COLLECTIONS_EDIT => 'Edit collection details',
+            self::COLLECTIONS_DELETE => 'Delete collections',
+
+            self::BRANCHES_VIEW => 'View version control branches',
+            self::BRANCHES_CREATE => 'Create new branches',
+            self::BRANCHES_EDIT => 'Edit branch details',
+            self::BRANCHES_DELETE => 'Delete branches',
+
+            self::COMMITS_VIEW => 'View version control commits',
+            self::COMMITS_CREATE => 'Create new commits',
+            self::COMMITS_EDIT => 'Edit commit details',
+            self::COMMITS_DELETE => 'Delete commits',
         };
     }
 

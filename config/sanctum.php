@@ -46,7 +46,15 @@ return [
     |
     */
 
-    'expiration' => 60 * 24 * 7,
+    'expiration' => env('SANCTUM_EXPIRATION'),
+
+    'default_token_expiration' => (int) env('SANCTUM_DEFAULT_TOKEN_EXPIRATION', 60 * 24 * 7),
+
+    'cli_auth' => [
+        'device_code_ttl' => (int) env('CLI_AUTH_DEVICE_CODE_TTL', 600),
+        'poll_interval' => (int) env('CLI_AUTH_POLL_INTERVAL', 5),
+        'access_token_ttl' => (int) env('CLI_AUTH_ACCESS_TOKEN_TTL_MINUTES', 15),
+    ],
 
     /*
     |--------------------------------------------------------------------------

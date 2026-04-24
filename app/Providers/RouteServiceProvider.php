@@ -28,6 +28,20 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
+        RateLimiter::for('cli-auth-start', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
+        });
+
+        RateLimiter::for('cli-auth-exchange', function (Request $request) {
+            $deviceCode = (string) $request->input('device_code', '');
+
+            return Limit::perMinute(30)->by($request->ip().'|'.$deviceCode);
+        });
+
+        RateLimiter::for('cli-auth-verify', function (Request $request) {
+            return Limit::perMinute(30)->by($request->ip());
+        });
+
         $this->routes(function () {
             Route::middleware('api')
                 ->prefix('api')

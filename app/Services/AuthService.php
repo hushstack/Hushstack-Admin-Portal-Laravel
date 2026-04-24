@@ -8,6 +8,16 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthService
 {
+    public function defaultAccessTokenTtl(): \DateTimeInterface
+    {
+        return now()->addMinutes((int) config('sanctum.default_token_expiration', 60 * 24 * 7));
+    }
+
+    public function cliAccessTokenTtl(): \DateTimeInterface
+    {
+        return now()->addMinutes((int) config('sanctum.cli_auth.access_token_ttl', 15));
+    }
+
     public function register(array $data): User
     {
         // Manual registration always gets the default role (ignore client input).
@@ -45,7 +55,29 @@ class AuthService
 
     public function issueToken(User $user): string
     {
-        return $user->createToken('api')->plainTextToken;
+        return $user->createToken('api', ['*'], $this->defaultAccessTokenTtl())->plainTextToken;
+    }
+
+    public function issueCliToken(User $user, string $tokenName, array $abilities = ['cli']): array
+    {
+        $token = $user->createToken(
+            $tokenName,
+            $abilities === [] ? ['cli'] : $abilities,
+            $this->cliAccessTokenTtl()
+        );
+
+        return [
+            'plain_text_token' => $token->plainTextToken,
+            'access_token' => $token->accessToken,
+        ];
+    }
+
+    public function makeCliTokenName(string $deviceName): string
+    {
+        $normalized = preg_replace('/[^a-z0-9]+/i', '-', trim($deviceName)) ?: 'device';
+        $normalized = trim((string) $normalized, '-');
+
+        return 'cli:'.strtolower($normalized).':'.now()->utc()->format('YmdHis');
     }
 
     public function changePassword(User $user, string $currentPassword, string $newPassword): bool

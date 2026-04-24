@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Admin\UserRequestController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\CliAuthController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\MemberRequestController;
@@ -45,6 +46,16 @@ Route::prefix('auth')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/change-password', [AuthController::class, 'changePassword']);
         Route::post('/delete-account', [AccountController::class, 'requestDelete']);
+    });
+});
+
+Route::prefix('cli/auth')->group(function () {
+    Route::post('/start', [CliAuthController::class, 'start'])->middleware('throttle:cli-auth-start');
+    Route::post('/exchange', [CliAuthController::class, 'exchange'])->middleware('throttle:cli-auth-exchange');
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/me', [CliAuthController::class, 'me']);
+        Route::post('/logout', [CliAuthController::class, 'logout']);
     });
 });
 

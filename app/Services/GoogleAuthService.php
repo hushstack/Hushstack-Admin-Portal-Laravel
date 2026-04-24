@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\CliLoginRequest;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -23,10 +24,10 @@ class GoogleAuthService
             'ts' => time(),
             'nonce' => Str::random(16),
             'provider' => 'google',
+            'mode' => 'default',
         ]);
 
-        return Socialite::driver('google')
-            ->stateless()
+        return $this->defaultGoogleDriver()
             ->with([
                 'state' => $state,
                 // Force Google to always show account picker + consent screen.
@@ -41,64 +42,8 @@ class GoogleAuthService
     public function handleCallback(Request $request): array
     {
         try {
-            $googleUser = Socialite::driver('google')->stateless()->user();
-
-            $provider = 'google';
-            $providerId = (string) $googleUser->getId();
-            $email = $googleUser->getEmail();
-            $name = $googleUser->getName() ?: 'Google User';
-            $avatar = $googleUser->getAvatar();
-            $raw = is_array($googleUser->user ?? null) ? $googleUser->user : [];
-            $emailVerified = (bool) ($raw['verified_email'] ?? false);
-
-            $user = User::where('provider', $provider)
-                ->where('provider_id', $providerId)
-                ->first();
-
-            if (! $user && $email && $emailVerified) {
-                $user = User::where('email', $email)->first();
-            }
-
-            if (! $user) {
-                if (! $email || ! $emailVerified) {
-                    return [
-                        'success' => false,
-                        'status' => 422,
-                        'message' => 'Google account must provide a verified email address.',
-                    ];
-                }
-
-                [$first, $last] = $this->splitName($name);
-
-                $roleId = Role::idBySlug(Role::USER_SLUG);
-                if ($roleId <= 0) {
-                    throw new \RuntimeException('Default role not configured.');
-                }
-
-                $user = User::create([
-                    'first_name' => $first,
-                    'last_name' => $last,
-                    'username' => $this->makeUsername($email),
-                    'email' => $email,
-                    'social_login_key' => 'google_'.Str::lower(Str::random(10)),
-                    'password' => Hash::make(Str::random(32)),
-                    'is_verified' => true,
-                    'email_verified_at' => now(),
-                    'provider' => $provider,
-                    'provider_id' => $providerId,
-                    'picture' => $avatar,
-                    'role_id' => $roleId,
-                ]);
-            } else {
-                $user->update([
-                    'provider' => $user->provider ?: $provider,
-                    'provider_id' => $user->provider_id ?: $providerId,
-                    'is_verified' => true,
-                    'email_verified_at' => $user->email_verified_at ?: now(),
-                    'picture' => $user->picture ?: $avatar,
-                ]);
-            }
-
+            $googleUser = $this->defaultGoogleDriver()->user();
+            $user = $this->resolveGoogleUser($googleUser);
             $state = $this->decodeState($request->query('state'));
             $redirectTo = $this->validateRedirectTo($state['redirect_to'] ?? null);
 
@@ -110,6 +55,67 @@ class GoogleAuthService
             ];
         } catch (\Throwable $e) {
             Log::warning('Google login failed.', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => false,
+                'status' => 422,
+                'message' => 'Google login failed.',
+            ];
+        }
+    }
+
+    public function redirectForCli(CliLoginRequest $loginRequest)
+    {
+        $state = $this->encodeState([
+            'ts' => time(),
+            'nonce' => Str::random(16),
+            'provider' => 'google',
+            'mode' => 'cli',
+            'cli_login_request_id' => $loginRequest->id,
+        ]);
+
+        return $this->cliGoogleDriver()
+            ->with([
+                'state' => $state,
+                'prompt' => 'select_account consent',
+            ])
+            ->redirect();
+    }
+
+    public function handleCliCallback(Request $request): array
+    {
+        try {
+            $googleUser = $this->cliGoogleDriver()->user();
+            $user = $this->resolveGoogleUser($googleUser);
+            $state = $this->decodeState($request->query('state'));
+            $loginRequestId = (int) ($state['cli_login_request_id'] ?? 0);
+
+            if (($state['mode'] ?? null) !== 'cli' || $loginRequestId <= 0) {
+                return [
+                    'success' => false,
+                    'status' => 422,
+                    'message' => 'CLI login request is invalid or expired.',
+                ];
+            }
+
+            $loginRequest = CliLoginRequest::query()->find($loginRequestId);
+            if (! $loginRequest) {
+                return [
+                    'success' => false,
+                    'status' => 404,
+                    'message' => 'CLI login request not found.',
+                ];
+            }
+
+            return [
+                'success' => true,
+                'user' => $user,
+                'login_request' => $loginRequest,
+            ];
+        } catch (\Throwable $e) {
+            Log::warning('Google CLI login failed.', [
                 'error' => $e->getMessage(),
             ]);
 
@@ -190,6 +196,63 @@ class GoogleAuthService
         return $data;
     }
 
+    private function resolveGoogleUser($googleUser): User
+    {
+        $provider = 'google';
+        $providerId = (string) $googleUser->getId();
+        $email = $googleUser->getEmail();
+        $name = $googleUser->getName() ?: 'Google User';
+        $avatar = $googleUser->getAvatar();
+        $raw = is_array($googleUser->user ?? null) ? $googleUser->user : [];
+        $emailVerified = (bool) ($raw['verified_email'] ?? false);
+
+        $user = User::where('provider', $provider)
+            ->where('provider_id', $providerId)
+            ->first();
+
+        if (! $user && $email && $emailVerified) {
+            $user = User::where('email', $email)->first();
+        }
+
+        if (! $user) {
+            if (! $email || ! $emailVerified) {
+                throw new \RuntimeException('Google account must provide a verified email address.');
+            }
+
+            [$first, $last] = $this->splitName($name);
+
+            $roleId = Role::idBySlug(Role::USER_SLUG);
+            if ($roleId <= 0) {
+                throw new \RuntimeException('Default role not configured.');
+            }
+
+            return User::create([
+                'first_name' => $first,
+                'last_name' => $last,
+                'username' => $this->makeUsername($email),
+                'email' => $email,
+                'social_login_key' => 'google_'.Str::lower(Str::random(10)),
+                'password' => Hash::make(Str::random(32)),
+                'is_verified' => true,
+                'email_verified_at' => now(),
+                'provider' => $provider,
+                'provider_id' => $providerId,
+                'picture' => $avatar,
+                'role_id' => $roleId,
+            ]);
+        }
+
+        $user->update([
+            'provider' => $user->provider ?: $provider,
+            'provider_id' => $user->provider_id ?: $providerId,
+            'is_verified' => true,
+            'email_verified_at' => $user->email_verified_at ?: now(),
+            'picture' => $user->picture ?: $avatar,
+        ]);
+
+        return $user;
+    }
+
     private function stateSigningKey(): string
     {
         return (string) config('app.key', 'google-oauth-state-fallback-key');
@@ -209,5 +272,18 @@ class GoogleAuthService
         $base = Str::before($email, '@');
 
         return $base.'_'.Str::lower(Str::random(4));
+    }
+
+    private function defaultGoogleDriver()
+    {
+        return Socialite::driver('google')
+            ->stateless();
+    }
+
+    private function cliGoogleDriver()
+    {
+        return Socialite::driver('google')
+            ->stateless()
+            ->redirectUrl(route('cli-auth.google.callback'));
     }
 }

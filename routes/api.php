@@ -2,6 +2,7 @@
 
 use App\Enums\Permission;
 use App\Http\Controllers\Api\AccountController;
+use App\Http\Controllers\Api\Admin\AlertController as AdminAlertController;
 use App\Http\Controllers\Api\Admin\LogController;
 use App\Http\Controllers\Api\Admin\MemberController;
 use App\Http\Controllers\Api\Admin\PositionController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Api\Admin\ProjectController;
 use App\Http\Controllers\Api\Admin\UserActivityController;
 use App\Http\Controllers\Api\Admin\UserAdminController;
 use App\Http\Controllers\Api\Admin\UserRequestController;
+use App\Http\Controllers\Api\AlertController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\CategoryController;
@@ -61,6 +63,8 @@ Route::prefix('cli/auth')->group(function () {
 
 Route::post('/contact', [\App\Http\Controllers\Api\ContactController::class, 'send']);
 Route::post('/member/request', [MemberRequestController::class, 'store']);
+Route::post('/alerts', [AlertController::class, 'store'])
+    ->middleware(['cachewraith.agent', 'throttle:cachewraith-alerts']);
 
 Route::middleware('auth:sanctum')->prefix('profile')->group(function () {
     Route::get('header', [ProfileController::class, 'header']);
@@ -133,25 +137,44 @@ Route::middleware('throttle:60,1')->get('projects-public', [ProjectController::c
  */
 Route::middleware(['auth:sanctum', 'super_admin'])->prefix('admin')->group(function () {
 
+    Route::middleware('throttle:60,1')->group(function () {
+        Route::middleware('permission:'.Permission::ALERTS_VIEW->value)->group(function () {
+            Route::get('alerts', [AdminAlertController::class, 'index']);
+            Route::get('alerts/{alert}', [AdminAlertController::class, 'show']);
+        });
+
+        Route::middleware('permission:'.Permission::ALERTS_ACKNOWLEDGE->value)
+            ->post('alerts/{alert}/acknowledge', [AdminAlertController::class, 'acknowledge']);
+
+        Route::middleware('permission:'.Permission::ALERTS_RESOLVE->value)
+            ->post('alerts/{alert}/resolve', [AdminAlertController::class, 'resolve']);
+
+        Route::middleware('permission:'.Permission::ALERTS_REOPEN->value)
+            ->post('alerts/{alert}/reopen', [AdminAlertController::class, 'reopen']);
+
+        Route::middleware('permission:'.Permission::ALERTS_DELETE->value)
+            ->delete('alerts/{alert}', [AdminAlertController::class, 'destroy']);
+    });
+
     // Permission Management with rate limiting
     // Requires 'permissions.view' to list/show, 'permissions.assign' to modify
     Route::middleware('throttle:60,1')->group(function () {
 
         // List/Show permissions - requires permissions.view
-        Route::middleware('permission:' . Permission::PERMISSIONS_VIEW->value)->group(function () {
+        Route::middleware('permission:'.Permission::PERMISSIONS_VIEW->value)->group(function () {
             Route::get('permissions', [PermissionController::class, 'index']);
             Route::get('permissions/{permission}', [PermissionController::class, 'show']);
             Route::get('permissions/{permission}/roles', [RolePermissionController::class, 'rolesWithPermission']);
         });
 
         // Role-Permission Assignment - requires permissions.assign
-        Route::middleware('permission:' . Permission::PERMISSIONS_ASSIGN->value)->group(function () {
+        Route::middleware('permission:'.Permission::PERMISSIONS_ASSIGN->value)->group(function () {
             Route::get('roles/{role}/permissions', [RolePermissionController::class, 'index']);
             Route::post('roles/{role}/permissions', [RolePermissionController::class, 'assign']);
         });
 
         // Revoke permissions - requires permissions.revoke
-        Route::middleware('permission:' . Permission::PERMISSIONS_REVOKE->value)->group(function () {
+        Route::middleware('permission:'.Permission::PERMISSIONS_REVOKE->value)->group(function () {
             // Revoke specific permissions by ID in body
             Route::delete('roles/{role}/permissions', [RolePermissionController::class, 'revoke']);
             // Revoke all permissions from role
@@ -179,52 +202,52 @@ Route::middleware(['auth:sanctum', 'super_admin'])->prefix('admin')->group(funct
 Route::middleware(['auth:sanctum'])->group(function () {
 
     // Collections
-    Route::middleware('permission:' . Permission::COLLECTIONS_VIEW->value)->group(function () {
+    Route::middleware('permission:'.Permission::COLLECTIONS_VIEW->value)->group(function () {
         Route::get('collections', [CollectionController::class, 'index']);
         Route::get('collections/count', [CollectionController::class, 'count']);
         Route::get('collections/{id}', [CollectionController::class, 'show']);
     });
 
-    Route::middleware('permission:' . Permission::COLLECTIONS_CREATE->value)
+    Route::middleware('permission:'.Permission::COLLECTIONS_CREATE->value)
         ->post('collections', [CollectionController::class, 'store']);
 
-    Route::middleware('permission:' . Permission::COLLECTIONS_EDIT->value)
+    Route::middleware('permission:'.Permission::COLLECTIONS_EDIT->value)
         ->put('collections/{id}', [CollectionController::class, 'update']);
 
-    Route::middleware('permission:' . Permission::COLLECTIONS_DELETE->value)
+    Route::middleware('permission:'.Permission::COLLECTIONS_DELETE->value)
         ->delete('collections/{id}', [CollectionController::class, 'destroy']);
 
     // Branches
-    Route::middleware('permission:' . Permission::BRANCHES_VIEW->value)->group(function () {
+    Route::middleware('permission:'.Permission::BRANCHES_VIEW->value)->group(function () {
         Route::get('branches', [BranchController::class, 'index']);
         Route::get('branches/count', [BranchController::class, 'count']);
         Route::get('branches/{id}', [BranchController::class, 'show']);
         Route::get('collections/{id}/branches', [BranchController::class, 'byCollection']);
     });
 
-    Route::middleware('permission:' . Permission::BRANCHES_CREATE->value)
+    Route::middleware('permission:'.Permission::BRANCHES_CREATE->value)
         ->post('branches', [BranchController::class, 'store']);
 
-    Route::middleware('permission:' . Permission::BRANCHES_EDIT->value)
+    Route::middleware('permission:'.Permission::BRANCHES_EDIT->value)
         ->put('branches/{id}', [BranchController::class, 'update']);
 
-    Route::middleware('permission:' . Permission::BRANCHES_DELETE->value)
+    Route::middleware('permission:'.Permission::BRANCHES_DELETE->value)
         ->delete('branches/{id}', [BranchController::class, 'destroy']);
 
     // Commits
-    Route::middleware('permission:' . Permission::COMMITS_VIEW->value)->group(function () {
+    Route::middleware('permission:'.Permission::COMMITS_VIEW->value)->group(function () {
         Route::get('commits', [CommitController::class, 'index']);
         Route::get('commits/count', [CommitController::class, 'count']);
         Route::get('commits/{id}', [CommitController::class, 'show']);
         Route::get('branches/{id}/commits', [CommitController::class, 'byBranch']);
     });
 
-    Route::middleware('permission:' . Permission::COMMITS_CREATE->value)
+    Route::middleware('permission:'.Permission::COMMITS_CREATE->value)
         ->post('commits', [CommitController::class, 'store']);
 
-    Route::middleware('permission:' . Permission::COMMITS_EDIT->value)
+    Route::middleware('permission:'.Permission::COMMITS_EDIT->value)
         ->put('commits/{id}', [CommitController::class, 'update']);
 
-    Route::middleware('permission:' . Permission::COMMITS_DELETE->value)
+    Route::middleware('permission:'.Permission::COMMITS_DELETE->value)
         ->delete('commits/{id}', [CommitController::class, 'destroy']);
 });

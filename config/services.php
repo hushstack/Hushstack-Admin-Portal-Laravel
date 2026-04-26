@@ -51,5 +51,9 @@ return [
         'tenant' => env('MICROSOFT_TENANT', 'common'),
     ],
 
+    'cachewraith' => [
+        'agent_token' => env('CACHEWRAITH_AGENT_TOKEN'),
+    ],
+
     'frontend_redirect_whitelist' => array_filter(explode(',', env('FRONTEND_REDIRECT_WHITELIST', ''))),
 ];

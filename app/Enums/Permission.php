@@ -84,6 +84,13 @@ enum Permission: string
     case LOGS_VIEW = 'logs.view';
     case LOGS_DELETE = 'logs.delete';
 
+    // Alert Management
+    case ALERTS_VIEW = 'alerts.view';
+    case ALERTS_ACKNOWLEDGE = 'alerts.acknowledge';
+    case ALERTS_RESOLVE = 'alerts.resolve';
+    case ALERTS_REOPEN = 'alerts.reopen';
+    case ALERTS_DELETE = 'alerts.delete';
+
     // Settings
     case SETTINGS_VIEW = 'settings.view';
     case SETTINGS_EDIT = 'settings.edit';
@@ -111,7 +118,7 @@ enum Permission: string
      */
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::USERS_VIEW => 'View Users',
             self::USERS_CREATE => 'Create Users',
             self::USERS_EDIT => 'Edit Users',
@@ -172,6 +179,12 @@ enum Permission: string
             self::LOGS_VIEW => 'View System Logs',
             self::LOGS_DELETE => 'Delete System Logs',
 
+            self::ALERTS_VIEW => 'View Alerts',
+            self::ALERTS_ACKNOWLEDGE => 'Acknowledge Alerts',
+            self::ALERTS_RESOLVE => 'Resolve Alerts',
+            self::ALERTS_REOPEN => 'Reopen Alerts',
+            self::ALERTS_DELETE => 'Delete Alerts',
+
             self::SETTINGS_VIEW => 'View Settings',
             self::SETTINGS_EDIT => 'Edit Settings',
 
@@ -197,7 +210,7 @@ enum Permission: string
      */
     public function description(): string
     {
-        return match($this) {
+        return match ($this) {
             self::USERS_VIEW => 'View user profiles and lists',
             self::USERS_CREATE => 'Create new user accounts',
             self::USERS_EDIT => 'Edit existing user accounts',
@@ -257,6 +270,12 @@ enum Permission: string
 
             self::LOGS_VIEW => 'View system logs',
             self::LOGS_DELETE => 'Delete old system logs',
+
+            self::ALERTS_VIEW => 'View CacheWraith monitoring alerts',
+            self::ALERTS_ACKNOWLEDGE => 'Acknowledge CacheWraith monitoring alerts',
+            self::ALERTS_RESOLVE => 'Resolve CacheWraith monitoring alerts',
+            self::ALERTS_REOPEN => 'Reopen CacheWraith monitoring alerts',
+            self::ALERTS_DELETE => 'Delete CacheWraith monitoring alerts',
 
             self::SETTINGS_VIEW => 'View system settings',
             self::SETTINGS_EDIT => 'Modify system settings',

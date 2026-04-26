@@ -60,6 +60,7 @@ class Kernel extends HttpKernel
         'super_admin' => \App\Http\Middleware\EnsureSuperAdminRole::class,
         'admin_or_partner' => \App\Http\Middleware\EnsureAdminOrPartnerRole::class,
         'active_catalog_user' => \App\Http\Middleware\EnsureActiveCatalogUserRole::class,
+        'cachewraith.agent' => \App\Http\Middleware\CacheWraithAgentAuth::class,
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,

@@ -4,13 +4,10 @@ namespace Tests\Feature;
 
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class UserSearchTest extends TestCase
 {
-    use RefreshDatabase;
-
     public function test_admin_can_search_users(): void
     {
         // Setup: Create roles

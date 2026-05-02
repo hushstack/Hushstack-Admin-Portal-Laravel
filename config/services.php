@@ -55,5 +55,10 @@ return [
         'agent_token' => env('CACHEWRAITH_AGENT_TOKEN'),
     ],
 
+    'github' => [
+        'token' => env('GITHUB_TOKEN'),
+        'owner' => env('GITHUB_OWNER', 'hushstack'),
+    ],
+
     'frontend_redirect_whitelist' => array_filter(explode(',', env('FRONTEND_REDIRECT_WHITELIST', ''))),
 ];

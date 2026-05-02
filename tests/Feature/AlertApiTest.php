@@ -7,15 +7,12 @@ use App\Models\Alert;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class AlertApiTest extends TestCase
 {
-    use RefreshDatabase;
-
     private string $agentToken = 'cachewraith-test-token';
 
     protected function setUp(): void

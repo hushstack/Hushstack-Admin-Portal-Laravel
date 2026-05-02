@@ -6,15 +6,12 @@ use App\Models\CliLoginRequest;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\CliAuthService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Laravel\Sanctum\PersonalAccessToken;
 use Tests\TestCase;
 
 class CliAuthTest extends TestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
         parent::setUp();

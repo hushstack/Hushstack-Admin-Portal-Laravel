@@ -6,14 +6,11 @@ use App\Models\Member;
 use App\Models\Position;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class AdminMemberApiTest extends TestCase
 {
-    use RefreshDatabase;
-
     protected Role $adminRole;
     protected Role $userRole;
 

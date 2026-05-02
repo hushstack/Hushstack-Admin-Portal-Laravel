@@ -3,6 +3,7 @@
 use App\Enums\Permission;
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\Admin\AlertController as AdminAlertController;
+use App\Http\Controllers\Api\Admin\GitHubRepositoryController;
 use App\Http\Controllers\Api\Admin\LogController;
 use App\Http\Controllers\Api\Admin\MemberController;
 use App\Http\Controllers\Api\Admin\PositionController;
@@ -104,6 +105,21 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::middleware('throttle:30,1')->group(function () {
         Route::get('logs', [LogController::class, 'index']);
         Route::get('logs/files', [LogController::class, 'files']);
+    });
+
+    Route::middleware('throttle:60,1')->prefix('github')->group(function () {
+        Route::middleware('permission:'.Permission::GITHUB_REPOSITORIES_VIEW->value)->group(function () {
+            Route::get('repositories', [GitHubRepositoryController::class, 'repositories']);
+            Route::get('repositories/{repositoryId}/branches', [GitHubRepositoryController::class, 'branches'])->whereNumber('repositoryId');
+            Route::get('repositories/{repositoryId}/branch', [GitHubRepositoryController::class, 'branch'])->whereNumber('repositoryId');
+            Route::get('repositories/{repositoryId}/branch/commits', [GitHubRepositoryController::class, 'branchCommits'])->whereNumber('repositoryId');
+            Route::get('repositories/{repositoryId}/commits/{sha}', [GitHubRepositoryController::class, 'show'])->whereNumber('repositoryId');
+            Route::get('repositories/{repositoryId}', [GitHubRepositoryController::class, 'repository'])->whereNumber('repositoryId');
+            Route::get('commits', [GitHubRepositoryController::class, 'commits']);
+        });
+
+        Route::middleware('permission:'.Permission::GITHUB_REPOSITORIES_CREATE->value)
+            ->post('repositories', [GitHubRepositoryController::class, 'storeRepository']);
     });
 });
 

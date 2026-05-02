@@ -91,6 +91,11 @@ enum Permission: string
     case ALERTS_REOPEN = 'alerts.reopen';
     case ALERTS_DELETE = 'alerts.delete';
 
+    // GitHub Repository Management
+    case GITHUB_REPOSITORIES_VIEW = 'github_repositories.view';
+    case GITHUB_REPOSITORIES_CREATE = 'github_repositories.create';
+    case GITHUB_REPOSITORIES_SYNC = 'github_repositories.sync';
+
     // Settings
     case SETTINGS_VIEW = 'settings.view';
     case SETTINGS_EDIT = 'settings.edit';
@@ -185,6 +190,10 @@ enum Permission: string
             self::ALERTS_REOPEN => 'Reopen Alerts',
             self::ALERTS_DELETE => 'Delete Alerts',
 
+            self::GITHUB_REPOSITORIES_VIEW => 'View GitHub Repositories',
+            self::GITHUB_REPOSITORIES_CREATE => 'Create GitHub Repositories',
+            self::GITHUB_REPOSITORIES_SYNC => 'Sync GitHub Repositories',
+
             self::SETTINGS_VIEW => 'View Settings',
             self::SETTINGS_EDIT => 'Edit Settings',
 
@@ -276,6 +285,10 @@ enum Permission: string
             self::ALERTS_RESOLVE => 'Resolve CacheWraith monitoring alerts',
             self::ALERTS_REOPEN => 'Reopen CacheWraith monitoring alerts',
             self::ALERTS_DELETE => 'Delete CacheWraith monitoring alerts',
+
+            self::GITHUB_REPOSITORIES_VIEW => 'View configured GitHub repositories and commits',
+            self::GITHUB_REPOSITORIES_CREATE => 'Register GitHub repositories for polling',
+            self::GITHUB_REPOSITORIES_SYNC => 'Refresh commit data from GitHub',
 
             self::SETTINGS_VIEW => 'View system settings',
             self::SETTINGS_EDIT => 'Modify system settings',

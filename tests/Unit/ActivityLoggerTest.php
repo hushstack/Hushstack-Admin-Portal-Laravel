@@ -6,13 +6,10 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\UserActivity;
 use App\Services\ActivityLogger;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ActivityLoggerTest extends TestCase
 {
-    use RefreshDatabase;
-
     public function test_activity_is_logged_with_user_id_and_role_id(): void
     {
         // Setup: Create a role and a user

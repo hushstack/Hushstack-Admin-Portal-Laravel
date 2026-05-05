@@ -19,6 +19,14 @@ use App\Http\Controllers\Api\CliAuthController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\MemberRequestController;
+use App\Http\Controllers\Api\NoteFlow\AiController;
+use App\Http\Controllers\Api\NoteFlow\BillingController;
+use App\Http\Controllers\Api\NoteFlow\DashboardController;
+use App\Http\Controllers\Api\NoteFlow\FolderController;
+use App\Http\Controllers\Api\NoteFlow\NoteController;
+use App\Http\Controllers\Api\NoteFlow\NotificationController;
+use App\Http\Controllers\Api\NoteFlow\SettingsController;
+use App\Http\Controllers\Api\NoteFlow\UploadController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
@@ -28,6 +36,7 @@ use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\Api\VersionControl\BranchController;
 use App\Http\Controllers\Api\VersionControl\CollectionController;
 use App\Http\Controllers\Api\VersionControl\CommitController;
+use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function () {
@@ -46,6 +55,10 @@ Route::prefix('auth')->group(function () {
     Route::get('microsoft/callback', [\App\Http\Controllers\Api\MicrosoftAuthController::class, 'callback']);
 
     Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/me', fn (\Illuminate\Http\Request $request) => response()->json([
+            'success' => true,
+            'user' => (new UserResource($request->user()->load('role')))->toArray($request),
+        ]));
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/change-password', [AuthController::class, 'changePassword']);
         Route::post('/delete-account', [AccountController::class, 'requestDelete']);
@@ -266,4 +279,51 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::middleware('permission:'.Permission::COMMITS_DELETE->value)
         ->delete('commits/{id}', [CommitController::class, 'destroy']);
+});
+
+Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
+    Route::get('dashboard', DashboardController::class);
+
+    Route::get('folders', [FolderController::class, 'index']);
+    Route::post('folders', [FolderController::class, 'store']);
+
+    Route::get('notes', [NoteController::class, 'index']);
+    Route::post('notes', [NoteController::class, 'store']);
+    Route::get('notes/{id}', [NoteController::class, 'show'])->whereNumber('id');
+    Route::patch('notes/{id}', [NoteController::class, 'update'])->whereNumber('id');
+    Route::delete('notes/{id}', [NoteController::class, 'destroy'])->whereNumber('id');
+    Route::post('notes/{id}/duplicate', [NoteController::class, 'duplicate'])->whereNumber('id');
+    Route::patch('notes/{id}/favorite', [NoteController::class, 'favorite'])->whereNumber('id');
+    Route::post('notes/{id}/share', [NoteController::class, 'share'])->whereNumber('id');
+    Route::get('notes/{id}/versions', [NoteController::class, 'versions'])->whereNumber('id');
+
+    Route::get('ai/tools', [AiController::class, 'tools']);
+    Route::post('ai/generate', [AiController::class, 'generate'])->middleware('throttle:20,1');
+    Route::get('ai/generations', [AiController::class, 'generations']);
+    Route::get('ai/settings', [AiController::class, 'settings']);
+    Route::patch('ai/settings', [AiController::class, 'updateSettings']);
+
+    Route::post('uploads', [UploadController::class, 'store'])->middleware('throttle:20,1');
+    Route::get('uploads', [UploadController::class, 'index']);
+    Route::get('uploads/{id}', [UploadController::class, 'show'])->whereNumber('id');
+    Route::delete('uploads/{id}', [UploadController::class, 'destroy'])->whereNumber('id');
+    Route::post('uploads/{id}/reprocess', [UploadController::class, 'reprocess'])->whereNumber('id')->middleware('throttle:20,1');
+
+    Route::get('notifications', [NotificationController::class, 'index']);
+    Route::post('notifications', [NotificationController::class, 'store']);
+    Route::patch('notifications/{id}', [NotificationController::class, 'update'])->whereNumber('id');
+    Route::delete('notifications/{id}', [NotificationController::class, 'destroy'])->whereNumber('id');
+    Route::get('notifications/history', [NotificationController::class, 'history']);
+
+    Route::get('settings', [SettingsController::class, 'show']);
+    Route::patch('settings/profile', [SettingsController::class, 'updateProfile']);
+    Route::patch('settings/appearance', [SettingsController::class, 'updateAppearance']);
+    Route::patch('settings/notifications', [SettingsController::class, 'updateNotifications']);
+    Route::patch('settings/security/password', [SettingsController::class, 'changePassword']);
+    Route::get('settings/security/sessions', [SettingsController::class, 'sessions']);
+    Route::delete('settings/security/sessions/{id}', [SettingsController::class, 'revokeSession'])->whereNumber('id');
+    Route::post('settings/security/2fa/enable', [SettingsController::class, 'enableTwoFactor']);
+
+    Route::get('billing/subscription', [BillingController::class, 'subscription']);
+    Route::get('billing/invoices', [BillingController::class, 'invoices']);
 });

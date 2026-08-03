@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Admin\AlertController as AdminAlertController;
 use App\Http\Controllers\Api\Admin\GitHubRepositoryController;
 use App\Http\Controllers\Api\Admin\LogController;
 use App\Http\Controllers\Api\Admin\MemberController;
+use App\Http\Controllers\Api\Admin\MessengerUserController;
 use App\Http\Controllers\Api\Admin\PositionController;
 use App\Http\Controllers\Api\Admin\ProjectController;
 use App\Http\Controllers\Api\Admin\UserActivityController;
@@ -133,6 +134,11 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
 
         Route::middleware('permission:'.Permission::GITHUB_REPOSITORIES_CREATE->value)
             ->post('repositories', [GitHubRepositoryController::class, 'storeRepository']);
+    });
+
+    // Messenger internal service proxy
+    Route::middleware('throttle:60,1')->prefix('messenger')->group(function () {
+        Route::get('users', [MessengerUserController::class, 'index']);
     });
 });
 

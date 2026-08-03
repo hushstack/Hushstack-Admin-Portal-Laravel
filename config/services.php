@@ -60,5 +60,12 @@ return [
         'owner' => env('GITHUB_OWNER', 'hushstack'),
     ],
 
+    'messenger' => [
+        'url' => env('MESSENGER_API_URL'),
+        'internal_key' => env('MESSENGER_INTERNAL_KEY'),
+        'connect_timeout' => (int) env('MESSENGER_API_CONNECT_TIMEOUT', 5),
+        'timeout' => (int) env('MESSENGER_API_TIMEOUT', 10),
+    ],
+
     'frontend_redirect_whitelist' => array_filter(explode(',', env('FRONTEND_REDIRECT_WHITELIST', ''))),
 ];
